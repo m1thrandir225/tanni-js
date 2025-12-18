@@ -1,4 +1,4 @@
-# tan-ni
+# tanni-js
 
 A JavaScript framework focused on simplicity.
 
