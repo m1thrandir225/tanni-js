@@ -1,4 +1,4 @@
-import { DOM_TYPES } from './h';
+import { DOM_TYPES } from "./types";
 
 export function mountDOM(vdom, parentEl) {
   switch (vdom.type) {

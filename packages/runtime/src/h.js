@@ -1,10 +1,6 @@
-export const DOM_TYPES = {
-  TEXT: 'text',
-  ELEMENT: 'element',
-  FRAGMENT: 'fragment',
-};
+import { DOM_TYPES } from "./types";
 
-export function h(tag, props = {}, children = []) {
+function h(tag, props = {}, children = []) {
   return {
     tag,
     props,
@@ -12,3 +8,5 @@ export function h(tag, props = {}, children = []) {
     type: DOM_TYPES.ELEMENT,
   };
 }
+
+export default h
