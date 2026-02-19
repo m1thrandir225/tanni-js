@@ -1,0 +1,39 @@
+{
+  "name": "vscode-tanni",
+  "displayName": "Tanni Language Support",
+  "description": "Syntax highlighting for Tanni (.tanni) single-file components",
+  "version": "0.0.1",
+  "publisher": "tanni-js",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "tanni",
+        "aliases": ["Tanni", "tanni"],
+        "extensions": [".tanni"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tanni",
+        "scopeName": "source.tanni",
+        "path": "./syntaxes/tanni.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.js": "javascript",
+          "source.ts": "typescript",
+          "text.html.basic": "html",
+          "source.css": "css"
+        }
+      }
+    ]
+  }
+}

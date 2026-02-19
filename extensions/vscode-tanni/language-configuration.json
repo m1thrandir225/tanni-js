@@ -1,0 +1,46 @@
+{
+  "comments": {
+    "blockComment": ["<!--", "-->"]
+  },
+  "brackets": [
+    ["<", ">"],
+    ["{", "}"],
+    ["(", ")"],
+    ["[", "]"]
+  ],
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "`", "close": "`", "notIn": ["string", "comment"] },
+    { "open": "<!--", "close": "-->", "notIn": ["string", "comment"] },
+    { "open": "{{", "close": "}}" }
+  ],
+  "surroundingPairs": [
+    { "open": "'", "close": "'" },
+    { "open": "\"", "close": "\"" },
+    { "open": "`", "close": "`" },
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "<", "close": ">" },
+    { "open": "{{", "close": "}}" }
+  ],
+  "colorizedBracketPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*<!--\\s*#region\\b.*-->",
+      "end": "^\\s*<!--\\s*#endregion\\b.*-->"
+    }
+  },
+  "indentationRules": {
+    "increaseIndentPattern": "<(?!\\?|area|base|br|col|frame|hr|html|img|input|link|meta|param|\\!)[a-zA-Z][^/]*>(?!.*</)|\\{[^}\"']*$",
+    "decreaseIndentPattern": "^\\s*(</[a-zA-Z]|\\})"
+  }
+}

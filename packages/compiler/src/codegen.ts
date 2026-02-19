@@ -139,9 +139,10 @@ function emitPlainElement(context: CodegenContext, node: TransformElementNode, p
       context,
       `${elementName}.__tnDelegatedHandlers ??= {};`
     );
+    const handlerExpr = toEventHandler(eventBinding.expression);
     pushLine(
       context,
-      `${elementName}.__tnDelegatedHandlers[${JSON.stringify(eventBinding.name.toLowerCase())}] = (event) => { ${eventBinding.expression}; };`
+      `${elementName}.__tnDelegatedHandlers[${JSON.stringify(eventBinding.name.toLowerCase())}] = ${handlerExpr};`
     );
   }
 
@@ -262,6 +263,20 @@ function createIdentifier(context: CodegenContext, base: string): string {
   const id = context.identifier;
   context.identifier += 1;
   return `__${base}${id}`;
+}
+
+function toEventHandler(expression: string): string {
+  const trimmed = expression.trim();
+
+  if (/^\w+$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('(') || trimmed.startsWith('function') || /^\w+\s*=>/.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `(event) => { ${trimmed}; }`;
 }
 
 function pushLine(context: CodegenContext, line: string): void {

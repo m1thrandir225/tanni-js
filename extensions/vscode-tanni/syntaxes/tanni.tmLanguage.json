@@ -1,0 +1,250 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Tanni",
+  "scopeName": "source.tanni",
+  "fileTypes": ["tanni"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#script-block" },
+    { "include": "#template-block" },
+    { "include": "#style-block" }
+  ],
+  "repository": {
+    "comment": {
+      "begin": "<!--",
+      "end": "-->",
+      "name": "comment.block.html.tanni",
+      "captures": {
+        "0": { "name": "punctuation.definition.comment.html.tanni" }
+      }
+    },
+
+    "script-block": {
+      "patterns": [
+        { "include": "#script-block-ts" },
+        { "include": "#script-block-js" }
+      ]
+    },
+
+    "script-block-ts": {
+      "begin": "(<)(script)(\\b[^>]*\\blang\\s*=\\s*[\"']ts[\"'][^>]*)(>)",
+      "end": "(</)(script)\\s*(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.script.html.tanni" },
+        "3": { "patterns": [{ "include": "#tag-attributes" }] },
+        "4": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.script.html.tanni" },
+        "3": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.block.script.tanni",
+      "contentName": "source.ts",
+      "patterns": [{ "include": "source.ts" }]
+    },
+
+    "script-block-js": {
+      "begin": "(<)(script)(\\b[^>]*)(>)",
+      "end": "(</)(script)\\s*(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.script.html.tanni" },
+        "3": { "patterns": [{ "include": "#tag-attributes" }] },
+        "4": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.script.html.tanni" },
+        "3": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.block.script.tanni",
+      "contentName": "source.js",
+      "patterns": [{ "include": "source.js" }]
+    },
+
+    "template-block": {
+      "begin": "(<)(template)(\\b[^>]*)(>)",
+      "end": "(</)(template)\\s*(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.template.html.tanni" },
+        "3": { "patterns": [{ "include": "#tag-attributes" }] },
+        "4": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.template.html.tanni" },
+        "3": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.block.template.tanni",
+      "patterns": [{ "include": "#template-content" }]
+    },
+
+    "style-block": {
+      "begin": "(<)(style)(\\b[^>]*)(>)",
+      "end": "(</)(style)\\s*(>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.style.html.tanni" },
+        "3": { "patterns": [{ "include": "#tag-attributes" }] },
+        "4": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.style.html.tanni" },
+        "3": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.block.style.tanni",
+      "contentName": "source.css",
+      "patterns": [{ "include": "source.css" }]
+    },
+
+    "template-content": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#interpolation" },
+        { "include": "#html-tag" },
+        { "include": "#html-entity" }
+      ]
+    },
+
+    "interpolation": {
+      "begin": "\\{\\{",
+      "end": "\\}\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.interpolation.begin.tanni" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.interpolation.end.tanni" }
+      },
+      "name": "meta.interpolation.tanni",
+      "contentName": "source.js",
+      "patterns": [{ "include": "source.js" }]
+    },
+
+    "html-tag": {
+      "patterns": [
+        { "include": "#html-tag-self-closing" },
+        { "include": "#html-tag-open" },
+        { "include": "#html-tag-close" }
+      ]
+    },
+
+    "html-tag-open": {
+      "begin": "(<)([A-Za-z][A-Za-z0-9-]*)",
+      "end": "(/?>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.html.tanni" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.tag.open.html.tanni",
+      "patterns": [{ "include": "#all-tag-attributes" }]
+    },
+
+    "html-tag-close": {
+      "match": "(</)(\\s*[A-Za-z][A-Za-z0-9-]*)\\s*(>)",
+      "captures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.html.tanni" },
+        "3": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.tag.close.html.tanni"
+    },
+
+    "html-tag-self-closing": {
+      "begin": "(<)([A-Za-z][A-Za-z0-9-]*)(?=[^>]*/>)",
+      "end": "(/>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html.tanni" },
+        "2": { "name": "entity.name.tag.html.tanni" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.end.html.tanni" }
+      },
+      "name": "meta.tag.self-closing.html.tanni",
+      "patterns": [{ "include": "#all-tag-attributes" }]
+    },
+
+    "all-tag-attributes": {
+      "patterns": [
+        { "include": "#tanni-directive" },
+        { "include": "#tanni-binding" },
+        { "include": "#tanni-event" },
+        { "include": "#tag-attributes" }
+      ]
+    },
+
+    "tanni-directive": {
+      "begin": "(tn-(?:if|else-if|else|for|show|model|html|text))(?:\\s*=\\s*)",
+      "end": "(?=[\\s/>])",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.directive.tanni" }
+      },
+      "name": "meta.directive.tanni",
+      "patterns": [{ "include": "#attribute-value-expression" }]
+    },
+
+    "tanni-binding": {
+      "begin": "(:)([A-Za-z][A-Za-z0-9_-]*)(?:\\s*=\\s*)",
+      "end": "(?=[\\s/>])",
+      "beginCaptures": {
+        "1": { "name": "keyword.operator.binding.tanni" },
+        "2": { "name": "entity.other.attribute-name.binding.tanni" }
+      },
+      "name": "meta.attribute.binding.tanni",
+      "patterns": [{ "include": "#attribute-value-expression" }]
+    },
+
+    "tanni-event": {
+      "begin": "(@)([A-Za-z][A-Za-z0-9_-]*)(?:\\s*=\\s*)",
+      "end": "(?=[\\s/>])",
+      "beginCaptures": {
+        "1": { "name": "keyword.operator.event.tanni" },
+        "2": { "name": "entity.other.attribute-name.event.tanni" }
+      },
+      "name": "meta.attribute.event.tanni",
+      "patterns": [{ "include": "#attribute-value-expression" }]
+    },
+
+    "attribute-value-expression": {
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.tanni" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.tanni" }
+      },
+      "name": "meta.attribute-value.expression.tanni",
+      "contentName": "source.js",
+      "patterns": [{ "include": "source.js" }]
+    },
+
+    "tag-attributes": {
+      "patterns": [
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_-]*)\\s*(=)\\s*(\"[^\"]*\"|'[^']*')",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.html.tanni" },
+            "2": { "name": "punctuation.separator.key-value.html.tanni" },
+            "3": { "name": "string.quoted.html.tanni" }
+          }
+        },
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_-]*)\\b(?!=)",
+          "name": "entity.other.attribute-name.html.tanni"
+        }
+      ]
+    },
+
+    "html-entity": {
+      "match": "&(?:[a-zA-Z]+|#[0-9]+|#x[0-9a-fA-F]+);",
+      "name": "constant.character.entity.html.tanni"
+    }
+  }
+}

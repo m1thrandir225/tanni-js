@@ -48,7 +48,7 @@ function addTodo() {
     <section class="panel">
       <h2>Counter</h2>
       <p>Current count: {{ count() }}</p>
-      <button @click="increment">Increment</button>
+      <button @click="increment()">Increment</button>
     </section>
 
     <section class="panel">
