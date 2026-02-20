@@ -1,3 +1,4 @@
+import './assets/index.css';
 import App from './App.tanni';
 
 const app = document.getElementById('app');

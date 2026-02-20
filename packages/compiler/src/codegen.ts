@@ -57,7 +57,7 @@ export function generate(root: TransformRoot, script: string, options: CompileOp
   context.indent -= 1;
   pushLine(context, '}');
 
-  return { code: `${context.lines.join('\n')}\n` };
+  return { code: `${context.lines.join('\n')}\n`, css: '' };
 }
 
 function emitNode(context: CodegenContext, node: TransformNode, parentName: string): void {
@@ -108,6 +108,10 @@ function emitTextNode(context: CodegenContext, node: Extract<TransformNode, { ty
 }
 
 function emitPlainElement(context: CodegenContext, node: TransformElementNode, parentName: string): string {
+  if (node.isComponent) {
+    return emitComponentElement(context, node, parentName);
+  }
+
   const elementName = declareNode(context, `document.createElement(${JSON.stringify(node.tag)})`);
   pushLine(context, `${parentName}.append(${elementName});`);
 
@@ -151,6 +155,67 @@ function emitPlainElement(context: CodegenContext, node: TransformElementNode, p
   }
 
   return elementName;
+}
+
+function emitComponentElement(context: CodegenContext, node: TransformElementNode, parentName: string): string {
+  const propEntries: string[] = [];
+
+  for (const attr of node.attributes) {
+    propEntries.push(`${JSON.stringify(attr.name)}: ${JSON.stringify(attr.value)}`);
+  }
+
+  for (const binding of node.bindings) {
+    propEntries.push(`${JSON.stringify(binding.name)}: ${binding.expression}`);
+  }
+
+  for (const eventBinding of node.events) {
+    const eventPropName = `on${eventBinding.name.charAt(0).toUpperCase()}${eventBinding.name.slice(1)}`;
+    const handlerExpr = toEventHandler(eventBinding.expression);
+    propEntries.push(`${JSON.stringify(eventPropName)}: ${handlerExpr}`);
+  }
+
+  const propsArg = propEntries.length > 0 ? `{ ${propEntries.join(', ')} }` : '{}';
+
+  const hasDynamicBindings = node.bindings.length > 0;
+
+  if (hasDynamicBindings) {
+    const endMarker = declareNode(context, `document.createComment('tn-component:${node.tag}')`);
+    pushLine(context, `${parentName}.append(${endMarker});`);
+    const nodesName = createIdentifier(context, 'compNodes');
+    pushLine(context, `let ${nodesName} = [];`);
+    pushLine(context, 'createEffect(() => {');
+    context.indent += 1;
+    pushLine(context, `for (const __n of ${nodesName}) {`);
+    context.indent += 1;
+    pushLine(context, `if (__n.parentNode === ${parentName}) ${parentName}.removeChild(__n);`);
+    context.indent -= 1;
+    pushLine(context, '}');
+    const fragmentName = createIdentifier(context, 'compFrag');
+    pushLine(context, `const ${fragmentName} = ${node.tag}(${propsArg});`);
+
+    if (node.children.length > 0) {
+      for (const child of node.children) {
+        emitNode(context, child, fragmentName);
+      }
+    }
+
+    const nextNodesName = createIdentifier(context, 'nextCompNodes');
+    pushLine(context, `const ${nextNodesName} = Array.from(${fragmentName}.childNodes);`);
+    pushLine(context, `for (const __n of ${nextNodesName}) ${parentName}.insertBefore(__n, ${endMarker});`);
+    pushLine(context, `${nodesName} = ${nextNodesName};`);
+    context.indent -= 1;
+    pushLine(context, '});');
+    return endMarker;
+  }
+
+  const componentName = declareNode(context, `${node.tag}(${propsArg})`);
+  pushLine(context, `${parentName}.append(${componentName});`);
+
+  for (const child of node.children) {
+    emitNode(context, child, componentName);
+  }
+
+  return componentName;
 }
 
 function emitIfNode(context: CodegenContext, node: TransformElementNode, parentName: string): void {
@@ -231,7 +296,7 @@ function rewriteScriptSetupProps(script: string): string {
   }
 
   return script
-    .replace(/defineProps\s*<([^>]+)>\s*\(\s*\)/g, '(__props as $1)')
+    .replace(/defineProps\s*<[^>]+>\s*\(\s*\)/g, '__props')
     .replace(/defineProps\s*\(\s*\)/g, '__props');
 }
 
@@ -239,18 +304,53 @@ function splitScriptParts(script: string): { imports: string[]; body: string } {
   const imports: string[] = [];
   const bodyLines: string[] = [];
 
-  for (const line of script.split('\n')) {
-    if (line.trim().startsWith('import ')) {
+  const lines = script.split('\n');
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i]!;
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith('import ')) {
       imports.push(line);
+      i += 1;
       continue;
     }
+
+    if (isTypeOnlyDeclaration(trimmed)) {
+      i = skipBracedBlock(lines, i);
+      continue;
+    }
+
     bodyLines.push(line);
+    i += 1;
   }
 
   return {
     imports: imports.filter((line) => line.trim().length > 0),
     body: bodyLines.join('\n').trim(),
   };
+}
+
+function isTypeOnlyDeclaration(trimmedLine: string): boolean {
+  return (
+    /^(export\s+)?interface\s+/.test(trimmedLine) ||
+    /^(export\s+)?type\s+\w+\s*[=<]/.test(trimmedLine)
+  );
+}
+
+function skipBracedBlock(lines: string[], startIndex: number): number {
+  let depth = 0;
+  let i = startIndex;
+  while (i < lines.length) {
+    const line = lines[i]!;
+    for (const ch of line) {
+      if (ch === '{') depth += 1;
+      if (ch === '}') depth -= 1;
+    }
+    i += 1;
+    if (depth <= 0) break;
+  }
+  return i;
 }
 
 function declareNode(context: CodegenContext, expression: string): string {

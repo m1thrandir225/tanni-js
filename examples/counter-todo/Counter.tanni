@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import { createSignal } from '../../packages/runtime/src/index';
+
+interface Props {
+  initialCount?: number;
+}
+const props = defineProps<Props>();
+const [count, setCount] = createSignal(props.initialCount ?? 0);
+
+function increment() {
+  setCount((prev) => prev + 1);
+}
+</script>
+
+<template>
+  <section class="rounded-xl bg-white p-5 shadow-sm">
+    <h2 class="mb-3 text-lg font-semibold text-gray-600">Counter</h2>
+    <p class="mb-2">Current count: {{ count() }}</p>
+    <button
+      class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700"
+      @click="increment()"
+    >Increment</button>
+  </section>
+</template>
+
+<style>
+@import "tailwindcss";
+</style>

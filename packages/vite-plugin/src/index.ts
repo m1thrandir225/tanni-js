@@ -8,11 +8,31 @@ export interface TanniPluginOptions {
 }
 
 const TANNI_EXTENSION = '.tanni';
+const VIRTUAL_CSS_SUFFIX = '.tanni.css';
+const VIRTUAL_CSS_PREFIX = '\0';
 
 export function tanniPlugin(options: TanniPluginOptions = {}): Plugin {
+  const cssCache = new Map<string, string>();
+
   return {
     name: 'tanni-plugin',
     enforce: 'pre',
+
+    resolveId(source) {
+      if (source.endsWith(VIRTUAL_CSS_SUFFIX)) {
+        return VIRTUAL_CSS_PREFIX + source;
+      }
+      return null;
+    },
+
+    load(id) {
+      if (id.startsWith(VIRTUAL_CSS_PREFIX) && id.endsWith(VIRTUAL_CSS_SUFFIX)) {
+        const realId = id.slice(VIRTUAL_CSS_PREFIX.length);
+        return cssCache.get(realId) ?? '';
+      }
+      return null;
+    },
+
     transform(source, id) {
       if (!id.endsWith(TANNI_EXTENSION)) {
         return null;
@@ -26,8 +46,16 @@ export function tanniPlugin(options: TanniPluginOptions = {}): Plugin {
         runtimeModule,
       });
 
+      let code = result.code;
+
+      if (result.css.length > 0) {
+        const virtualCssId = id + '.css';
+        cssCache.set(virtualCssId, result.css);
+        code = `import ${JSON.stringify(virtualCssId)};\n${code}`;
+      }
+
       return {
-        code: result.code,
+        code,
         map: null,
       };
     },

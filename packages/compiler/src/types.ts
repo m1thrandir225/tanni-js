@@ -1,7 +1,14 @@
+export interface SfcStyleBlock {
+  content: string;
+  lang: string | null;
+  scoped: boolean;
+}
+
 export interface SfcDescriptor {
   template: string;
   script: string;
   scriptLang: string | null;
+  styles: SfcStyleBlock[];
 }
 
 export interface TemplateRoot {
@@ -53,6 +60,7 @@ export type TextSegment =
 export interface TransformElementNode {
   type: 'Element';
   tag: string;
+  isComponent: boolean;
   attributes: StaticAttribute[];
   bindings: DynamicBinding[];
   events: EventBinding[];
@@ -94,4 +102,5 @@ export interface CompileOptions {
 
 export interface CompileResult {
   code: string;
+  css: string;
 }

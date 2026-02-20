@@ -78,6 +78,7 @@ function transformNode(node: TemplateNode): TransformNode {
   return {
     type: 'Element',
     tag: node.tag,
+    isComponent: /^[A-Z]/.test(node.tag),
     attributes,
     bindings,
     events,

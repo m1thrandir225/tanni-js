@@ -1,8 +1,10 @@
-import type { ElementNode, RawAttribute, SfcDescriptor, TemplateNode, TemplateRoot, TextNode } from './types';
+import type { ElementNode, RawAttribute, SfcDescriptor, SfcStyleBlock, TemplateNode, TemplateRoot, TextNode } from './types';
 
 const TEMPLATE_BLOCK = /<template\b[^>]*>([\s\S]*?)<\/template>/i;
 const SCRIPT_BLOCK = /<script\b([^>]*)>([\s\S]*?)<\/script>/i;
+const STYLE_BLOCK = /<style\b([^>]*)>([\s\S]*?)<\/style>/gi;
 const LANG_ATTR = /\blang\s*=\s*["']([^"']+)["']/i;
+const SCOPED_ATTR = /\bscoped\b/i;
 
 export function parseSfc(source: string): SfcDescriptor {
   const templateMatch = source.match(TEMPLATE_BLOCK);
@@ -18,10 +20,22 @@ export function parseSfc(source: string): SfcDescriptor {
   const scriptAttrs = scriptMatch?.[1] ?? '';
   const scriptLangMatch = scriptAttrs.match(LANG_ATTR);
 
+  const styles: SfcStyleBlock[] = [];
+  for (const styleMatch of source.matchAll(STYLE_BLOCK)) {
+    const attrs = styleMatch[1] ?? '';
+    const langMatch = attrs.match(LANG_ATTR);
+    styles.push({
+      content: (styleMatch[2] ?? '').trim(),
+      lang: langMatch?.[1] ?? null,
+      scoped: SCOPED_ATTR.test(attrs),
+    });
+  }
+
   return {
     template: templateBlock.trim(),
     script: scriptMatch?.[2]?.trim() ?? '',
     scriptLang: scriptLangMatch?.[1] ?? null,
+    styles,
   };
 }
 

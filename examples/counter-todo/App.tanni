@@ -1,73 +1,14 @@
 <script setup lang="ts">
-import { createSignal, createMemo } from '../../packages/runtime/src/index';
+import Counter from './Counter.tanni';
+import TodoList from './TodoList.tanni';
 
 const props = defineProps();
-const [count, setCount] = createSignal(0);
-const [todos, setTodos] = createSignal([
-  { id: 1, label: 'Write parser MVP', done: true },
-  { id: 2, label: 'Ship Vite plugin MVP', done: false },
-  { id: 3, label: 'Validate sample app', done: false },
-]);
-const [filter, setFilter] = createSignal('all');
-
-const visibleTodos = createMemo(() => {
-  const mode = filter();
-  return todos().filter((todo) => {
-    if (mode === 'active') return !todo.done;
-    if (mode === 'done') return todo.done;
-    return true;
-  });
-});
-
-function increment() {
-  setCount((prev) => prev + 1);
-}
-
-function toggleTodo(id) {
-  setTodos((prev) =>
-    prev.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo))
-  );
-}
-
-function removeTodo(id) {
-  setTodos((prev) => prev.filter((todo) => todo.id !== id));
-}
-
-function addTodo() {
-  const nextId = todos().length === 0 ? 1 : Math.max(...todos().map((todo) => todo.id)) + 1;
-  setTodos((prev) => [
-    ...prev,
-    { id: nextId, label: `Todo ${nextId}`, done: false },
-  ]);
-}
 </script>
 
 <template>
-  <main class="app">
-    <h1>{{ props.title ?? 'Tanni Counter + Todo' }}</h1>
-    <section class="panel">
-      <h2>Counter</h2>
-      <p>Current count: {{ count() }}</p>
-      <button @click="increment()">Increment</button>
-    </section>
-
-    <section class="panel">
-      <h2>Todos</h2>
-      <p>Total: {{ todos().length }}</p>
-      <button @click="addTodo">Add todo</button>
-      <div class="filters">
-        <button :data-active="filter() === 'all'" @click="setFilter('all')">All</button>
-        <button :data-active="filter() === 'active'" @click="setFilter('active')">Active</button>
-        <button :data-active="filter() === 'done'" @click="setFilter('done')">Done</button>
-      </div>
-      <p tn-if="visibleTodos().length === 0">No todos for this filter.</p>
-      <ul>
-        <li tn-for="todo in visibleTodos()">
-          <span>{{ todo.label }} - {{ todo.done ? 'done' : 'active' }}</span>
-          <button @click="toggleTodo(todo.id)">Toggle</button>
-          <button @click="removeTodo(todo.id)">Delete</button>
-        </li>
-      </ul>
-    </section>
+  <main class="mx-auto max-w-2xl space-y-5 px-6 py-12">
+    <h1 class="text-2xl font-bold">{{ props.title ?? 'Tanni Counter + Todo' }}</h1>
+    <Counter />
+    <TodoList />
   </main>
 </template>
