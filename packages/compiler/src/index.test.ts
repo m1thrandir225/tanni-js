@@ -117,6 +117,95 @@ const count = () => 5;
   });
 });
 
+describe('defineProps rewriting', () => {
+  it('rewrites defineProps() with no args to __props', () => {
+    const source = `
+<script setup lang="ts">
+const props = defineProps();
+</script>
+<template>
+  <p>{{ props.title }}</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('const props = __props;');
+  });
+
+  it('rewrites defineProps<T>() with generic only to __props', () => {
+    const source = `
+<script setup lang="ts">
+interface Props { title: string; }
+const props = defineProps<Props>();
+</script>
+<template>
+  <p>{{ props.title }}</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('const props = __props;');
+    expect(code).not.toContain('interface Props');
+  });
+
+  it('rewrites defineProps<T>({ defaults }) to spread with __props', () => {
+    const source = `
+<script setup lang="ts">
+interface Props { count: number; onIncrement: () => void; }
+const props = defineProps<Props>({ count: 0 });
+</script>
+<template>
+  <p>{{ props.count }}</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('const props = { ...{ count: 0 }, ...__props };');
+    expect(code).not.toContain('defineProps');
+    expect(code).not.toContain('interface Props');
+  });
+
+  it('rewrites defineProps({ defaults }) without generic to spread with __props', () => {
+    const source = `
+<script setup lang="ts">
+const props = defineProps({ count: 0 });
+</script>
+<template>
+  <p>{{ props.count }}</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('const props = { ...{ count: 0 }, ...__props };');
+  });
+
+  it('rewrites withDefaults(defineProps<T>(), { defaults }) to spread with __props', () => {
+    const source = `
+<script setup lang="ts">
+interface Props { count: number; label: string; }
+const props = withDefaults(defineProps<Props>(), { count: 0, label: "hello" });
+</script>
+<template>
+  <p>{{ props.label }}: {{ props.count }}</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('const props = { ...{ count: 0, label: "hello" }, ...__props };');
+    expect(code).not.toContain('withDefaults');
+    expect(code).not.toContain('defineProps');
+  });
+
+  it('rewrites withDefaults without generic to spread with __props', () => {
+    const source = `
+<script setup lang="ts">
+const props = withDefaults(defineProps(), { count: 5 });
+</script>
+<template>
+  <p>{{ props.count }}</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('const props = { ...{ count: 5 }, ...__props };');
+    expect(code).not.toContain('withDefaults');
+  });
+});
+
 describe('style block extraction', () => {
   it('extracts a single style block', () => {
     const source = `

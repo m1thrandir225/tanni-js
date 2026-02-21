@@ -82,6 +82,3 @@ function addTodo() {
   </section>
 </template>
 
-<style>
-@import "tailwindcss";
-</style>

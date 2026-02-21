@@ -1,14 +1,20 @@
 <script setup lang="ts">
+import { createSignal } from '../../packages/runtime/src/index';
 import Counter from './Counter.tanni';
 import TodoList from './TodoList.tanni';
 
 const props = defineProps();
+const [count, setCount] = createSignal(0);
+
+function increment() {
+  setCount((c) => c + 1);
+}
 </script>
 
 <template>
   <main class="mx-auto max-w-2xl space-y-5 px-6 py-12">
     <h1 class="text-2xl font-bold">{{ props.title ?? 'Tanni Counter + Todo' }}</h1>
-    <Counter />
+    <Counter :count="count()" @increment="increment" />
     <TodoList />
   </main>
 </template>

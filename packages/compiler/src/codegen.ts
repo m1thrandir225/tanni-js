@@ -296,6 +296,8 @@ function rewriteScriptSetupProps(script: string): string {
   }
 
   return script
+    .replace(/withDefaults\s*\(\s*defineProps\s*(?:<[^>]+>\s*)?\(\s*\)\s*,\s*(\{[^}]*\})\s*\)/g, '{ ...$1, ...__props }')
+    .replace(/defineProps\s*(?:<[^>]+>\s*)?\(\s*(\{[^}]*\})\s*\)/g, '{ ...$1, ...__props }')
     .replace(/defineProps\s*<[^>]+>\s*\(\s*\)/g, '__props')
     .replace(/defineProps\s*\(\s*\)/g, '__props');
 }
