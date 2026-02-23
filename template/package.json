@@ -1,0 +1,19 @@
+{
+  "name": "tanni-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "tanni-runtime": "latest"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1",
+    "vite-plugin-tanni": "latest",
+    "typescript": "^5.9.3"
+  }
+}

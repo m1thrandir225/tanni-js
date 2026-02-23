@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const props = defineProps();
+</script>
+
+<template>
+  <main>
+    <h1>{{ props.title ?? 'Welcome to Tanni' }}</h1>
+    <p>Edit src/App.tanni to get started.</p>
+  </main>
+</template>
