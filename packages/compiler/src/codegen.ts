@@ -165,7 +165,7 @@ function emitComponentElement(context: CodegenContext, node: TransformElementNod
   }
 
   for (const binding of node.bindings) {
-    propEntries.push(`${JSON.stringify(binding.name)}: ${binding.expression}`);
+    propEntries.push(`get ${JSON.stringify(binding.name)}() { return ${binding.expression}; }`);
   }
 
   for (const eventBinding of node.events) {
@@ -175,38 +175,6 @@ function emitComponentElement(context: CodegenContext, node: TransformElementNod
   }
 
   const propsArg = propEntries.length > 0 ? `{ ${propEntries.join(', ')} }` : '{}';
-
-  const hasDynamicBindings = node.bindings.length > 0;
-
-  if (hasDynamicBindings) {
-    const endMarker = declareNode(context, `document.createComment('tn-component:${node.tag}')`);
-    pushLine(context, `${parentName}.append(${endMarker});`);
-    const nodesName = createIdentifier(context, 'compNodes');
-    pushLine(context, `let ${nodesName} = [];`);
-    pushLine(context, 'createEffect(() => {');
-    context.indent += 1;
-    pushLine(context, `for (const __n of ${nodesName}) {`);
-    context.indent += 1;
-    pushLine(context, `if (__n.parentNode === ${parentName}) ${parentName}.removeChild(__n);`);
-    context.indent -= 1;
-    pushLine(context, '}');
-    const fragmentName = createIdentifier(context, 'compFrag');
-    pushLine(context, `const ${fragmentName} = ${node.tag}(${propsArg});`);
-
-    if (node.children.length > 0) {
-      for (const child of node.children) {
-        emitNode(context, child, fragmentName);
-      }
-    }
-
-    const nextNodesName = createIdentifier(context, 'nextCompNodes');
-    pushLine(context, `const ${nextNodesName} = Array.from(${fragmentName}.childNodes);`);
-    pushLine(context, `for (const __n of ${nextNodesName}) ${parentName}.insertBefore(__n, ${endMarker});`);
-    pushLine(context, `${nodesName} = ${nextNodesName};`);
-    context.indent -= 1;
-    pushLine(context, '});');
-    return endMarker;
-  }
 
   const componentName = declareNode(context, `${node.tag}(${propsArg})`);
   pushLine(context, `${parentName}.append(${componentName});`);
@@ -296,8 +264,8 @@ function rewriteScriptSetupProps(script: string): string {
   }
 
   return script
-    .replace(/withDefaults\s*\(\s*defineProps\s*(?:<[^>]+>\s*)?\(\s*\)\s*,\s*(\{[^}]*\})\s*\)/g, '{ ...$1, ...__props }')
-    .replace(/defineProps\s*(?:<[^>]+>\s*)?\(\s*(\{[^}]*\})\s*\)/g, '{ ...$1, ...__props }')
+    .replace(/withDefaults\s*\(\s*defineProps\s*(?:<[^>]+>\s*)?\(\s*\)\s*,\s*(\{[^}]*\})\s*\)/g, 'Object.create($1, Object.getOwnPropertyDescriptors(__props))')
+    .replace(/defineProps\s*(?:<[^>]+>\s*)?\(\s*(\{[^}]*\})\s*\)/g, 'Object.create($1, Object.getOwnPropertyDescriptors(__props))')
     .replace(/defineProps\s*<[^>]+>\s*\(\s*\)/g, '__props')
     .replace(/defineProps\s*\(\s*\)/g, '__props');
 }

@@ -8,6 +8,7 @@ const [count, setCount] = createSignal(0);
 
 function increment() {
   setCount((c) => c + 1);
+  console.log("increment", count())
 }
 </script>
 

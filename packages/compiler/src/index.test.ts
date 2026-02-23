@@ -81,11 +81,11 @@ function handleClick() {}
     const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
     expect(code).toContain('MyComp(');
     expect(code).toContain('"title": "hello"');
-    expect(code).toContain('"count": val()');
+    expect(code).toContain('get "count"() { return val(); }');
     expect(code).toContain('"onClick": handleClick');
   });
 
-  it('wraps component with dynamic bindings in createEffect', () => {
+  it('emits getter props for dynamic bindings instead of wrapping in createEffect', () => {
     const source = `
 <script setup lang="ts">
 import Counter from './Counter.tanni';
@@ -96,9 +96,9 @@ const count = () => 5;
 </template>
 `;
     const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
-    expect(code).toContain("document.createComment('tn-component:Counter')");
-    expect(code).toContain('createEffect(() => {');
     expect(code).toContain('Counter({');
+    expect(code).toContain('get "value"() { return count(); }');
+    expect(code).not.toContain("document.createComment('tn-component:Counter')");
   });
 
   it('treats lowercase tags as plain HTML elements', () => {
@@ -157,12 +157,12 @@ const props = defineProps<Props>({ count: 0 });
 </template>
 `;
     const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
-    expect(code).toContain('const props = { ...{ count: 0 }, ...__props };');
+    expect(code).toContain('const props = Object.create({ count: 0 }, Object.getOwnPropertyDescriptors(__props));');
     expect(code).not.toContain('defineProps');
     expect(code).not.toContain('interface Props');
   });
 
-  it('rewrites defineProps({ defaults }) without generic to spread with __props', () => {
+  it('rewrites defineProps({ defaults }) without generic to Object.create with __props', () => {
     const source = `
 <script setup lang="ts">
 const props = defineProps({ count: 0 });
@@ -172,10 +172,10 @@ const props = defineProps({ count: 0 });
 </template>
 `;
     const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
-    expect(code).toContain('const props = { ...{ count: 0 }, ...__props };');
+    expect(code).toContain('const props = Object.create({ count: 0 }, Object.getOwnPropertyDescriptors(__props));');
   });
 
-  it('rewrites withDefaults(defineProps<T>(), { defaults }) to spread with __props', () => {
+  it('rewrites withDefaults(defineProps<T>(), { defaults }) to Object.create with __props', () => {
     const source = `
 <script setup lang="ts">
 interface Props { count: number; label: string; }
@@ -186,12 +186,12 @@ const props = withDefaults(defineProps<Props>(), { count: 0, label: "hello" });
 </template>
 `;
     const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
-    expect(code).toContain('const props = { ...{ count: 0, label: "hello" }, ...__props };');
+    expect(code).toContain('const props = Object.create({ count: 0, label: "hello" }, Object.getOwnPropertyDescriptors(__props));');
     expect(code).not.toContain('withDefaults');
     expect(code).not.toContain('defineProps');
   });
 
-  it('rewrites withDefaults without generic to spread with __props', () => {
+  it('rewrites withDefaults without generic to Object.create with __props', () => {
     const source = `
 <script setup lang="ts">
 const props = withDefaults(defineProps(), { count: 5 });
@@ -201,7 +201,7 @@ const props = withDefaults(defineProps(), { count: 5 });
 </template>
 `;
     const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
-    expect(code).toContain('const props = { ...{ count: 5 }, ...__props };');
+    expect(code).toContain('const props = Object.create({ count: 5 }, Object.getOwnPropertyDescriptors(__props));');
     expect(code).not.toContain('withDefaults');
   });
 });
