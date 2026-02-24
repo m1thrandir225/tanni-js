@@ -7,7 +7,7 @@ interface CodegenContext {
   delegatedEvents: Set<string>;
 }
 
-const DEFAULT_RUNTIME_MODULE = '../../runtime/src/index';
+const DEFAULT_RUNTIME_MODULE = 'tanni/internals';
 
 export function generate(root: TransformRoot, script: string, options: CompileOptions = {}): CompileResult {
   const runtimeModule = options.runtimeModule ?? DEFAULT_RUNTIME_MODULE;

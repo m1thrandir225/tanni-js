@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { compileSfc, parseSfc } from './index';
+import { compileSfc } from './index';
+import { parseSfc } from './parser';
 
 describe('compileSfc', () => {
   it('compiles interpolation, bindings, events, tn-if and tn-for', () => {

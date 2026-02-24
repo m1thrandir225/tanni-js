@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createSignal } from '../../packages/runtime/src/index';
+import { createSignal } from 'tanni';
 import Counter from './Counter.tanni';
 import TodoList from './TodoList.tanni';
 

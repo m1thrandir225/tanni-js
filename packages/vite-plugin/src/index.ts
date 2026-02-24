@@ -1,7 +1,7 @@
 import path from 'node:path';
 import type { Plugin } from 'vite';
 
-import { compileSfc } from '../../compiler/src/index';
+import { compileSfc } from 'tanni-compiler';
 
 export interface TanniPluginOptions {
   runtimeModule?: string;
@@ -10,6 +10,7 @@ export interface TanniPluginOptions {
 const TANNI_EXTENSION = '.tanni';
 const VIRTUAL_CSS_SUFFIX = '.tanni.css';
 const VIRTUAL_CSS_PREFIX = '\0';
+const DEFAULT_RUNTIME_MODULE = 'tanni/internals';
 
 export function tanniPlugin(options: TanniPluginOptions = {}): Plugin {
   const cssCache = new Map<string, string>();
@@ -38,8 +39,7 @@ export function tanniPlugin(options: TanniPluginOptions = {}): Plugin {
         return null;
       }
 
-      const runtimeModule =
-        options.runtimeModule ?? toRuntimeImport(path.dirname(id), path.resolve(process.cwd(), 'packages/runtime/src/index.ts'));
+      const runtimeModule = options.runtimeModule ?? DEFAULT_RUNTIME_MODULE;
       const result = compileSfc(source, {
         id,
         componentName: inferComponentName(id),
@@ -60,13 +60,6 @@ export function tanniPlugin(options: TanniPluginOptions = {}): Plugin {
       };
     },
   };
-}
-
-function toRuntimeImport(fromDirectory: string, runtimeEntry: string): string {
-  const relative = path.relative(fromDirectory, runtimeEntry);
-  const withPosixSeparators = relative.split(path.sep).join('/');
-  const withoutExtension = withPosixSeparators.replace(/\.ts$/, '');
-  return withoutExtension.startsWith('.') ? withoutExtension : `./${withoutExtension}`;
 }
 
 function inferComponentName(filePath: string): string {

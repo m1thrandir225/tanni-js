@@ -3,6 +3,8 @@ import { parseSfc, parseTemplate } from './parser';
 import { transformTemplate } from './transform';
 import type { CompileOptions, CompileResult } from './types';
 
+export type { CompileOptions, CompileResult } from './types';
+
 export function compileSfc(source: string, options: CompileOptions = {}): CompileResult {
   const descriptor = parseSfc(source);
   const parsedTemplate = parseTemplate(descriptor.template);
@@ -16,8 +18,3 @@ export function compileSfc(source: string, options: CompileOptions = {}): Compil
 
   return { ...result, css };
 }
-
-export { generate } from './codegen';
-export { parseSfc, parseTemplate } from './parser';
-export { transformTemplate } from './transform';
-export type { CompileOptions, CompileResult } from './types';

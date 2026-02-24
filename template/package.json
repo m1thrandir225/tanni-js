@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "tanni-runtime": "latest"
+    "tanni": "latest"
   },
   "devDependencies": {
     "vite": "^7.3.1",

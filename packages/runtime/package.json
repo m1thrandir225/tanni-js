@@ -1,0 +1,21 @@
+{
+  "name": "tanni",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Signal-based reactive runtime for the Tanni framework",
+  "license": "MIT",
+  "author": "Sebastijan Zindl",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./internals": {
+      "types": "./src/internals.ts",
+      "default": "./src/internals.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": ["src", "dist"]
+}

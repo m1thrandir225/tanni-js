@@ -1,0 +1,23 @@
+{
+  "name": "vite-plugin-tanni",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Vite plugin for compiling .tanni single-file components",
+  "license": "MIT",
+  "author": "Sebastijan Zindl",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": ["src", "dist"],
+  "dependencies": {
+    "tanni-compiler": "workspace:*"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  }
+}

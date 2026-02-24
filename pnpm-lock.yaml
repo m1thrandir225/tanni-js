@@ -69,6 +69,19 @@ importers:
         specifier: ^4.0.16
         version: 4.0.16(@types/node@25.0.6)(jiti@2.6.1)(jsdom@28.0.0)(lightningcss@1.31.1)
 
+  packages/compiler: {}
+
+  packages/runtime: {}
+
+  packages/vite-plugin:
+    dependencies:
+      tanni-compiler:
+        specifier: workspace:*
+        version: link:../compiler
+      vite:
+        specifier: '>=5.0.0'
+        version: 7.3.1(@types/node@25.0.6)(jiti@2.6.1)(lightningcss@1.31.1)
+
 packages:
 
   '@acemir/cssom@0.9.31':
