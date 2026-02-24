@@ -8,13 +8,20 @@
   "engines": {
     "vscode": "^1.75.0"
   },
-  "categories": ["Programming Languages"],
+  "categories": [
+    "Programming Languages"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "tanni",
-        "aliases": ["Tanni", "tanni"],
-        "extensions": [".tanni"],
+        "aliases": [
+          "Tanni",
+          "tanni"
+        ],
+        "extensions": [
+          ".tanni"
+        ],
         "configuration": "./language-configuration.json",
         "icon": {
           "light": "./icon.png",
@@ -35,5 +42,11 @@
         }
       }
     ]
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.7.1"
   }
 }
