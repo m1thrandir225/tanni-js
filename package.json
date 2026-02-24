@@ -19,8 +19,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit --pretty false",
-    "build": "tsup packages/runtime/src/index.ts --format esm,cjs --dts --clean --out-dir dist/runtime",
-    "dev": "tsup packages/runtime/src/index.ts --format esm --dts --watch --out-dir dist/runtime",
+    "build": "pnpm -r run build",
+    "dev": "pnpm --filter tannijs run dev",
     "demo:dev": "vite --config examples/counter-todo/vite.config.ts",
     "demo:build": "vite build --config examples/counter-todo/vite.config.ts"
   },
