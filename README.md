@@ -17,6 +17,10 @@ It's inspired by:
 
 ***NOTE***: **work in progress**
 
+## Extension
+
+There is an experimental `VSCode` extension, you can download it from the releases and install it in your editor. The current implementation only supports syntax highlihting.
+
 ## Roadmap
 
 ### Current version: 0.1
