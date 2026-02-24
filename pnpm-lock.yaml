@@ -75,7 +75,7 @@ importers:
 
   packages/vite-plugin:
     dependencies:
-      tanni-compiler:
+      tannijs-compiler:
         specifier: workspace:*
         version: link:../compiler
       vite:

@@ -1,5 +1,5 @@
 {
-  "name": "tanni-compiler",
+  "name": "tannijs-compiler",
   "version": "0.1.0",
   "type": "module",
   "description": "SFC compiler for the Tanni framework",

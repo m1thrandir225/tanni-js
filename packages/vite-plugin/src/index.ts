@@ -1,7 +1,7 @@
 import path from 'node:path';
 import type { Plugin } from 'vite';
 
-import { compileSfc } from 'tanni-compiler';
+import { compileSfc } from 'tannijs-compiler';
 
 export interface TanniPluginOptions {
   runtimeModule?: string;
@@ -10,7 +10,7 @@ export interface TanniPluginOptions {
 const TANNI_EXTENSION = '.tanni';
 const VIRTUAL_CSS_SUFFIX = '.tanni.css';
 const VIRTUAL_CSS_PREFIX = '\0';
-const DEFAULT_RUNTIME_MODULE = 'tanni/internals';
+const DEFAULT_RUNTIME_MODULE = 'tannijs/internals';
 
 export function tanniPlugin(options: TanniPluginOptions = {}): Plugin {
   const cssCache = new Map<string, string>();

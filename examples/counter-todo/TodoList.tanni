@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createSignal, createMemo } from 'tanni';
+import { createSignal, createMemo } from 'tannijs';
 
 const props = defineProps();
 const [todos, setTodos] = createSignal([
