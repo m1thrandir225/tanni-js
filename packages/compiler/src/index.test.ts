@@ -271,3 +271,202 @@ describe('style block extraction', () => {
     expect(descriptor.styles[0]!.scoped).toBe(true);
   });
 });
+
+describe('conditional directives (tn-if / tn-else-if / tn-else)', () => {
+  it('compiles a standalone tn-if', () => {
+    const source = `
+<script setup lang="ts">
+const show = () => true;
+</script>
+<template>
+  <p tn-if="show()">Visible</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("document.createComment('tn-if')");
+    expect(code).toContain('if (show())');
+    expect(code).not.toContain('else');
+  });
+
+  it('compiles tn-if + tn-else chain', () => {
+    const source = `
+<script setup lang="ts">
+const ok = () => true;
+</script>
+<template>
+  <p tn-if="ok()">Yes</p>
+  <p tn-else>No</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (ok())');
+    expect(code).toContain('} else {');
+  });
+
+  it('compiles tn-if + tn-else-if + tn-else chain with comparison operators', () => {
+    const source = `
+<script setup lang="ts">
+const count = () => 5;
+</script>
+<template>
+  <div tn-if="count() > 10">High</div>
+  <div tn-else-if="count() > 5">Medium</div>
+  <div tn-else>Low</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (count() > 10)');
+    expect(code).toContain('} else if (count() > 5)');
+    expect(code).toContain('} else {');
+    const markerCount = (code.match(/document\.createComment\('tn-if'\)/g) ?? []).length;
+    expect(markerCount).toBe(1);
+  });
+
+  it('compiles multiple tn-else-if branches', () => {
+    const source = `
+<script setup lang="ts">
+const v = () => 2;
+</script>
+<template>
+  <span tn-if="v() === 1">One</span>
+  <span tn-else-if="v() === 2">Two</span>
+  <span tn-else-if="v() === 3">Three</span>
+  <span tn-else>Other</span>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (v() === 1)');
+    expect(code).toContain('} else if (v() === 2)');
+    expect(code).toContain('} else if (v() === 3)');
+    expect(code).toContain('} else {');
+  });
+
+  it('throws on tn-else without preceding tn-if', () => {
+    const source = `
+<script setup lang="ts">
+</script>
+<template>
+  <p tn-else>Orphan</p>
+</template>
+`;
+    expect(() => compileSfc(source, { runtimeModule: 'tanni-runtime' })).toThrow(
+      'tn-else without a preceding tn-if'
+    );
+  });
+
+  it('throws on tn-else-if without preceding tn-if', () => {
+    const source = `
+<script setup lang="ts">
+</script>
+<template>
+  <p tn-else-if="true">Orphan</p>
+</template>
+`;
+    expect(() => compileSfc(source, { runtimeModule: 'tanni-runtime' })).toThrow(
+      'tn-else-if without a preceding tn-if'
+    );
+  });
+});
+
+describe('comparison operators in attribute values', () => {
+  it('handles > in tn-if expressions', () => {
+    const source = `
+<script setup lang="ts">
+const n = () => 5;
+</script>
+<template>
+  <p tn-if="n() > 3">big</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (n() > 3)');
+  });
+
+  it('handles < in tn-if expressions', () => {
+    const source = `
+<script setup lang="ts">
+const n = () => 1;
+</script>
+<template>
+  <p tn-if="n() < 10">small</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (n() < 10)');
+  });
+
+  it('handles >= and <= in tn-if expressions', () => {
+    const source = `
+<script setup lang="ts">
+const n = () => 5;
+</script>
+<template>
+  <p tn-if="n() >= 5">gte</p>
+  <p tn-if="n() <= 5">lte</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (n() >= 5)');
+    expect(code).toContain('if (n() <= 5)');
+  });
+
+  it('handles !== and === in tn-if expressions', () => {
+    const source = `
+<script setup lang="ts">
+const s = () => 'a';
+</script>
+<template>
+  <p tn-if="s() !== 'b'">not b</p>
+  <p tn-if="s() === 'a'">is a</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("if (s() !== 'b')");
+    expect(code).toContain("if (s() === 'a')");
+  });
+
+  it('handles != and == in tn-if expressions', () => {
+    const source = `
+<script setup lang="ts">
+const n = () => 5;
+</script>
+<template>
+  <p tn-if="n() != null">defined</p>
+  <p tn-if="n() == 5">five</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (n() != null)');
+    expect(code).toContain('if (n() == 5)');
+  });
+
+  it('handles > in dynamic attribute bindings', () => {
+    const source = `
+<script setup lang="ts">
+const n = () => 5;
+</script>
+<template>
+  <div :data-big="n() > 3">test</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('n() > 3');
+  });
+
+  it('handles > in tn-else-if expressions', () => {
+    const source = `
+<script setup lang="ts">
+const n = () => 5;
+</script>
+<template>
+  <p tn-if="n() > 10">high</p>
+  <p tn-else-if="n() > 3">medium</p>
+  <p tn-else>low</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('if (n() > 10)');
+    expect(code).toContain('} else if (n() > 3)');
+    expect(code).toContain('} else {');
+  });
+});

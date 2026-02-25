@@ -67,18 +67,14 @@ export function parseTemplate(templateSource: string): TemplateRoot {
         continue;
       }
 
-      const openTag = templateSource.slice(index).match(/^<\s*([A-Za-z][\w-]*)([\s\S]*?)>/);
+      const openTag = matchOpenTag(templateSource, index);
       if (!openTag) {
         throw new Error(`Invalid opening tag near: ${templateSource.slice(index, index + 20)}`);
       }
 
-      const tag = openTag[1];
-      const rawAttrs = openTag[2] ?? '';
-      if (!tag) {
-        throw new Error('Invalid opening tag.');
-      }
-      const selfClosing = rawAttrs.trim().endsWith('/');
-      const cleanAttrs = selfClosing ? rawAttrs.replace(/\/\s*$/, '') : rawAttrs;
+      const tag = openTag.tag;
+      const selfClosing = openTag.selfClosing;
+      const cleanAttrs = openTag.attrs;
 
       const node: ElementNode = {
         type: 'Element',
@@ -88,7 +84,7 @@ export function parseTemplate(templateSource: string): TemplateRoot {
       };
 
       appendChild(stack, root, node);
-      index += openTag[0].length;
+      index += openTag.length;
 
       if (!selfClosing) {
         stack.push(node);
@@ -133,6 +129,51 @@ function appendChild(stack: ElementNode[], root: TemplateRoot, node: TemplateNod
     throw new Error('Unexpected parser state.');
   }
   parent.children.push(node);
+}
+
+interface OpenTagMatch {
+  tag: string;
+  attrs: string;
+  selfClosing: boolean;
+  length: number;
+}
+
+function matchOpenTag(source: string, start: number): OpenTagMatch | null {
+  const tagNameMatch = source.slice(start).match(/^<\s*([A-Za-z][\w-]*)/);
+  if (!tagNameMatch) {
+    return null;
+  }
+  const tag = tagNameMatch[1]!;
+  let cursor = start + tagNameMatch[0].length;
+
+  while (cursor < source.length) {
+    const ch = source[cursor];
+
+    if (ch === '"' || ch === "'") {
+      const closeQuote = source.indexOf(ch, cursor + 1);
+      if (closeQuote === -1) {
+        return null;
+      }
+      cursor = closeQuote + 1;
+      continue;
+    }
+
+    if (ch === '>') {
+      const attrsRaw = source.slice(start + tagNameMatch[0].length, cursor);
+      const selfClosing = attrsRaw.trim().endsWith('/');
+      const attrs = selfClosing ? attrsRaw.replace(/\/\s*$/, '') : attrsRaw;
+      return {
+        tag,
+        attrs,
+        selfClosing,
+        length: cursor - start + 1,
+      };
+    }
+
+    cursor += 1;
+  }
+
+  return null;
 }
 
 function parseAttributes(raw: string): RawAttribute[] {

@@ -85,6 +85,8 @@ export interface EventBinding {
 
 export interface DirectiveMap {
   if?: string;
+  elseIf?: string;
+  else?: boolean;
   for?: ForDirective;
 }
 

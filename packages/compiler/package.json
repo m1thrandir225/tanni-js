@@ -1,6 +1,6 @@
 {
   "name": "tannijs-compiler",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "SFC compiler for the Tanni framework",
   "license": "MIT",
@@ -17,7 +17,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"

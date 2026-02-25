@@ -20,9 +20,7 @@
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit --pretty false",
     "build": "pnpm -r run build",
-    "dev": "pnpm --filter tannijs run dev",
-    "demo:dev": "vite --config examples/counter-todo/vite.config.ts",
-    "demo:build": "vite build --config examples/counter-todo/vite.config.ts"
+    "dev": "pnpm --filter tannijs run dev"
   },
   "repository": {
     "type": "git",
@@ -30,7 +28,7 @@
   },
   "author": "Sebastijan Zindl",
   "license": "MIT",
-  "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48",
+  "packageManager": "pnpm@10.30.2+sha512.36cdc707e7b7940a988c9c1ecf88d084f8514b5c3f085f53a2e244c2921d3b2545bc20dd4ebe1fc245feec463bb298aecea7a63ed1f7680b877dc6379d8d0cb4",
   "engines": {
     "node": ">=21.0.0",
     "pnpm": ">=10.0"

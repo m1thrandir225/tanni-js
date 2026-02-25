@@ -41,9 +41,7 @@ export function generate(root: TransformRoot, script: string, options: CompileOp
   }
 
   const rootNodeName = declareNode(context, 'document.createDocumentFragment()');
-  for (const child of root.children) {
-    emitNode(context, child, rootNodeName);
-  }
+  emitChildren(context, root.children, rootNodeName);
 
   if (context.delegatedEvents.size > 0) {
     const eventList = Array.from(context.delegatedEvents)
@@ -60,6 +58,48 @@ export function generate(root: TransformRoot, script: string, options: CompileOp
   return { code: `${context.lines.join('\n')}\n`, css: '' };
 }
 
+function emitChildren(context: CodegenContext, children: TransformNode[], parentName: string): void {
+  let i = 0;
+  while (i < children.length) {
+    const child = children[i]!;
+
+    if (child.type === 'Element' && child.directives.if) {
+      const chain: TransformElementNode[] = [child];
+      let j = i + 1;
+      while (j < children.length) {
+        const sibling = children[j]!;
+        if (sibling.type === 'Text') {
+          const isWhitespace = sibling.segments.every(
+            (s) => s.type === 'static' && s.value.trim().length === 0
+          );
+          if (isWhitespace) {
+            j += 1;
+            continue;
+          }
+          break;
+        }
+        if (sibling.type === 'Element' && (sibling.directives.elseIf || sibling.directives.else)) {
+          chain.push(sibling);
+          j += 1;
+          if (sibling.directives.else) break;
+          continue;
+        }
+        break;
+      }
+      emitConditionalChain(context, chain, parentName);
+      i = j;
+      continue;
+    }
+
+    if (child.type === 'Element' && (child.directives.elseIf || child.directives.else)) {
+      throw new Error(`${child.directives.elseIf ? 'tn-else-if' : 'tn-else'} without a preceding tn-if on <${child.tag}>.`);
+    }
+
+    emitNode(context, child, parentName);
+    i += 1;
+  }
+}
+
 function emitNode(context: CodegenContext, node: TransformNode, parentName: string): void {
   if (node.type === 'Text') {
     emitTextNode(context, node, parentName);
@@ -72,7 +112,7 @@ function emitNode(context: CodegenContext, node: TransformNode, parentName: stri
   }
 
   if (node.directives.if) {
-    emitIfNode(context, node, parentName);
+    emitConditionalChain(context, [node], parentName);
     return;
   }
 
@@ -150,9 +190,7 @@ function emitPlainElement(context: CodegenContext, node: TransformElementNode, p
     );
   }
 
-  for (const child of node.children) {
-    emitNode(context, child, elementName);
-  }
+  emitChildren(context, node.children, elementName);
 
   return elementName;
 }
@@ -179,35 +217,46 @@ function emitComponentElement(context: CodegenContext, node: TransformElementNod
   const componentName = declareNode(context, `${node.tag}(${propsArg})`);
   pushLine(context, `${parentName}.append(${componentName});`);
 
-  for (const child of node.children) {
-    emitNode(context, child, componentName);
-  }
+  emitChildren(context, node.children, componentName);
 
   return componentName;
 }
 
-function emitIfNode(context: CodegenContext, node: TransformElementNode, parentName: string): void {
+function emitConditionalChain(context: CodegenContext, chain: TransformElementNode[], parentName: string): void {
   const endMarker = declareNode(context, "document.createComment('tn-if')");
   pushLine(context, `${parentName}.append(${endMarker});`);
   const nodesName = createIdentifier(context, 'ifNodes');
   pushLine(context, `let ${nodesName} = [];`);
   pushLine(context, 'createEffect(() => {');
   context.indent += 1;
-  pushLine(context, `for (const node of ${nodesName}) {`);
+  pushLine(context, `for (const __n of ${nodesName}) {`);
   context.indent += 1;
-  pushLine(context, `if (node.parentNode === ${parentName}) ${parentName}.removeChild(node);`);
+  pushLine(context, `if (__n.parentNode === ${parentName}) ${parentName}.removeChild(__n);`);
   context.indent -= 1;
   pushLine(context, '}');
   pushLine(context, `${nodesName} = [];`);
-  pushLine(context, `if (${node.directives.if}) {`);
-  context.indent += 1;
-  const fragmentName = declareNode(context, 'document.createDocumentFragment()');
-  emitPlainElement(context, removeControlFlow(node), fragmentName);
-  const nextNodesName = createIdentifier(context, 'nextIfNodes');
-  pushLine(context, `const ${nextNodesName} = Array.from(${fragmentName}.childNodes);`);
-  pushLine(context, `for (const node of ${nextNodesName}) ${parentName}.insertBefore(node, ${endMarker});`);
-  pushLine(context, `${nodesName} = ${nextNodesName};`);
-  context.indent -= 1;
+
+  for (let branchIdx = 0; branchIdx < chain.length; branchIdx += 1) {
+    const branch = chain[branchIdx]!;
+
+    if (branch.directives.if) {
+      pushLine(context, `if (${branch.directives.if}) {`);
+    } else if (branch.directives.elseIf) {
+      pushLine(context, `} else if (${branch.directives.elseIf}) {`);
+    } else {
+      pushLine(context, '} else {');
+    }
+    context.indent += 1;
+
+    const fragmentName = declareNode(context, 'document.createDocumentFragment()');
+    emitPlainElement(context, removeControlFlow(branch), fragmentName);
+    const branchNodes = createIdentifier(context, 'branchNodes');
+    pushLine(context, `const ${branchNodes} = Array.from(${fragmentName}.childNodes);`);
+    pushLine(context, `for (const __n of ${branchNodes}) ${parentName}.insertBefore(__n, ${endMarker});`);
+    pushLine(context, `${nodesName} = ${branchNodes};`);
+    context.indent -= 1;
+  }
+
   pushLine(context, '}');
   context.indent -= 1;
   pushLine(context, '});');

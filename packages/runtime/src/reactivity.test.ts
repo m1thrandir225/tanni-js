@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { batch, createEffect, createMemo, createSignal, onCleanup, untrack } from './reactivity';
+import { batch, createEffect, createMemo, createSignal, onCleanup, onMount, untrack } from './reactivity';
 
 describe('reactivity core', () => {
   it('tracks signal reads and reruns effects on updates', () => {
@@ -131,5 +131,69 @@ describe('reactivity core', () => {
 
     expect(count()).toBe(4);
     expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('preserves explicit TypeScript generics on createSignal', () => {
+    interface User {
+      name: string;
+      age: number;
+    }
+
+    const [user, setUser] = createSignal<User>({ name: 'Alice', age: 30 });
+    expect(user().name).toBe('Alice');
+    expect(user().age).toBe(30);
+
+    setUser({ name: 'Bob', age: 25 });
+    expect(user().name).toBe('Bob');
+
+    setUser((prev) => ({ ...prev, age: prev.age + 1 }));
+    expect(user().age).toBe(26);
+  });
+
+  it('preserves explicit TypeScript generics on createMemo', () => {
+    interface Stats {
+      total: number;
+      label: string;
+    }
+
+    const [count, setCount] = createSignal(3);
+    const stats = createMemo<Stats>(() => ({
+      total: count() * 2,
+      label: `Items: ${count()}`,
+    }));
+
+    expect(stats().total).toBe(6);
+    expect(stats().label).toBe('Items: 3');
+
+    setCount(5);
+    expect(stats().total).toBe(10);
+    expect(stats().label).toBe('Items: 5');
+  });
+
+  it('supports union and nullable types in createSignal', () => {
+    const [value, setValue] = createSignal<string | null>(null);
+    expect(value()).toBeNull();
+
+    setValue('hello');
+    expect(value()).toBe('hello');
+
+    setValue(null);
+    expect(value()).toBeNull();
+  });
+
+  it('runs onMount callback asynchronously after synchronous setup', async () => {
+    const order: string[] = [];
+
+    order.push('before');
+    onMount(() => {
+      order.push('mounted');
+    });
+    order.push('after');
+
+    expect(order).toEqual(['before', 'after']);
+
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+    expect(order).toEqual(['before', 'after', 'mounted']);
   });
 });

@@ -196,4 +196,8 @@ export function onCleanup(fn: CleanupFn): void {
   currentComputation.cleanups.push(fn);
 }
 
+export function onMount(fn: () => void): void {
+  queueMicrotask(fn);
+}
+
 export const effect = createEffect;

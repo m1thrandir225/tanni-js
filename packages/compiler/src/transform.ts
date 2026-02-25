@@ -39,6 +39,19 @@ function transformNode(node: TemplateNode): TransformNode {
       continue;
     }
 
+    if (attr.name === 'tn-else-if') {
+      if (!attr.value) {
+        throw new Error('tn-else-if requires an expression value.');
+      }
+      directives.elseIf = attr.value;
+      continue;
+    }
+
+    if (attr.name === 'tn-else') {
+      directives.else = true;
+      continue;
+    }
+
     if (attr.name === 'tn-for') {
       if (!attr.value) {
         throw new Error('tn-for requires an expression value.');
