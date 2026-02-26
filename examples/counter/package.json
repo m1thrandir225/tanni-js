@@ -1,0 +1,21 @@
+{
+  "name": "counter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "tannijs": "latest"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1",
+    "vite-plugin-tannijs": "latest",
+    "typescript": "^5.9.3",
+    "tailwindcss": "^4.2.0",
+    "@tailwindcss/vite": "^4.2.0"
+  }
+}

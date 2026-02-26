@@ -1,0 +1,23 @@
+<script setup lang="ts">
+import type { Todo } from '../types/todo';
+const props = defineProps<{
+    todo: Todo
+}>();
+
+
+</script>
+
+<template>
+    <li  class="flex items-center gap-2 border-b border-gray-100 py-2 last:border-b-0">
+        <span tn-if="!props.todo.isDone" class="flex-1" >{{ props.todo.label }}</span>
+        <span tn-else class="flex-1 line-through">{{ props.todo.label }}</span>
+        <button
+          class="cursor-pointer rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 transition-colors hover:bg-gray-200"
+          @click="props.onToggle(props.todo.id)"
+        >Toggle</button>
+        <button
+          class="cursor-pointer rounded bg-red-50 px-2 py-1 text-xs text-red-600 transition-colors hover:bg-red-100"
+          @click="props.onDelete(props.todo.id)"
+        >Delete</button>
+      </li>
+</template>

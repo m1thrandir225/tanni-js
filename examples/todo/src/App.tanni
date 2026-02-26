@@ -1,0 +1,75 @@
+<script setup lang="ts">
+  import { createSignal, createMemo } from 'tannijs';
+  import TodoComponent from "./components/Todo.tanni";
+  import type { Todo } from './types/todo';
+
+  const [todos, setTodos] = createSignal([
+    { id: 1, label: 'Write parser MVP', isDone: true },
+  ]);
+  const [filter, setFilter] = createSignal('all');
+  
+  const visibleTodos = createMemo(() => {
+    const mode = filter();
+    return todos().filter((todo) => {
+      if (mode === 'active') return !todo.isDone;
+      if (mode === 'done') return todo.isDone;
+      return true;
+    });
+  });
+  
+  function toggleTodo(id) {
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === id ? { ...todo, isDone: !todo.isDone } : todo))
+    );
+  }
+  
+  function removeTodo(id) {
+    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+  }
+  
+  function addTodo() {
+    const nextId = todos().length === 0 ? 1 : Math.max(...todos().map((todo) => todo.id)) + 1;
+    setTodos((prev) => [
+      ...prev,
+      { id: nextId, label: `Todo ${nextId}`, isDone: false },
+    ]);
+  }
+  </script>
+  
+  <template>
+    <main class="mx-auto max-w-md px-6 py-12">
+      <h1 class="mb-6 text-2xl font-bold">Tanni Todo</h1>
+      <section class="rounded-xl bg-white p-6 shadow-sm">
+        <p class="mb-2">Total: {{ todos().length }}</p>
+        <button
+          class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700"
+          @click="addTodo"
+        >Add todo</button>
+  
+        <div class="my-3 flex gap-2">
+          <button
+            class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
+            :data-active="filter() === 'all'"
+            @click="setFilter('all')"
+          >All</button>
+          <button
+            class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
+            :data-active="filter() === 'active'"
+            @click="setFilter('active')"
+          >Active</button>
+          <button
+            class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
+            :data-active="filter() === 'done'"
+            @click="setFilter('done')"
+          >Done</button>
+        </div>
+  
+        <p tn-if="visibleTodos().length === 0" class="text-sm text-gray-400">No todos for this filter.</p>
+  
+        <ul class="mt-3 list-none">
+          <TodoComponent tn-for="todo in visibleTodos()" :key="todo.id" :todo="todo" @toggle="toggleTodo" @delete="removeTodo" />
+        </ul>
+      </section>
+    </main>
+  </template>
+  
