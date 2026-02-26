@@ -330,7 +330,10 @@ function splitScriptParts(script: string): { imports: string[]; body: string } {
     const trimmed = line.trim();
 
     if (trimmed.startsWith('import ')) {
-      imports.push(line);
+      const stripped = stripTypeOnlyImport(trimmed);
+      if (stripped !== null) {
+        imports.push(stripped);
+      }
       i += 1;
       continue;
     }
@@ -348,6 +351,18 @@ function splitScriptParts(script: string): { imports: string[]; body: string } {
     imports: imports.filter((line) => line.trim().length > 0),
     body: bodyLines.join('\n').trim(),
   };
+}
+
+/**
+ * Returns null for pure type-only imports (should be dropped entirely).
+ * For mixed imports with inline `type` specifiers, strips the `type` keyword.
+ */
+function stripTypeOnlyImport(line: string): string | null {
+  if (/^import\s+type\s+/.test(line)) {
+    return null;
+  }
+
+  return line.replace(/\btype\s+(?=\w)/g, '');
 }
 
 function isTypeOnlyDeclaration(trimmedLine: string): boolean {

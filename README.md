@@ -25,24 +25,24 @@ There is an experimental `VSCode` extension, you can download it from the releas
 
 ### Current version: 0.1
 
-- Reactive state
-- Computed Values
-- Side Effects
-- Text Interpolation
-- Attribute Binding
-- Event Handling
-- Conditional Rendering
-- List Rendering
-- Component Props
-- Typescript Support
+- Reactive state ✔︎
+- Computed Values ✔︎
+- Side Effects ✔︎
+- Text Interpolation ✔︎
+- Attribute Binding ✔︎
+- Event Handling ✔︎
+- Conditional Rendering ✔︎
+- List Rendering ✔︎
+- Component Props ✔︎
+- Typescript Support ✔︎
 
-### Version 0.2
+### Working on Version 0.2
 
 - Scoped CSS with compile-time transformation
 - `tn-model` two-way binding
 - `tn-show` for CSS-based visibility toggle
 - Slots for content distribution
-- Lifecycle hooks
+- Lifecycle hooks (partially ✔︎)
 
 ### Version 0.3
 
