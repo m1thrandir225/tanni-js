@@ -21,6 +21,23 @@ It's inspired by:
 
 There is an experimental `VSCode` extension, you can download it from the releases and install it in your editor. The current implementation only supports syntax highlihting.
 
+## Create a project
+
+You can create a project using the following command:
+```bash
+npx degit m1thrandir225/tanni-js/template <project_name>
+```
+Next if run the setup.js file using Node:
+```bash
+cd <project_name> && node setup.js
+``` 
+where you will be asked to choose if you want Tailwind support or not & finally you can install the dependencies using any package manager of your choosing:
+```bash
+npm/yarn/pnpm install 
+npm/yarn/pnpm run dev
+```
+
+
 ## Roadmap
 
 ### Current version: 0.1
