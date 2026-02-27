@@ -13,7 +13,8 @@ export function generate(root: TransformRoot, script: string, options: CompileOp
   const runtimeModule = options.runtimeModule ?? DEFAULT_RUNTIME_MODULE;
   const componentName = options.componentName ?? 'Component';
   const preparedScript = rewriteScriptSetupProps(script);
-  const scriptParts = splitScriptParts(preparedScript);
+  const strippedScript = stripTypeAnnotations(preparedScript);
+  const scriptParts = splitScriptParts(strippedScript);
   const context: CodegenContext = {
     lines: [],
     indent: 0,
@@ -317,6 +318,24 @@ function rewriteScriptSetupProps(script: string): string {
     .replace(/defineProps\s*(?:<[^>]+>\s*)?\(\s*(\{[^}]*\})\s*\)/g, 'Object.create($1, Object.getOwnPropertyDescriptors(__props))')
     .replace(/defineProps\s*<[^>]+>\s*\(\s*\)/g, '__props')
     .replace(/defineProps\s*\(\s*\)/g, '__props');
+}
+
+function stripTypeAnnotations(script: string): string {
+  let result = script;
+
+  result = result.replace(/\b(\w+)\s*<([^>()]*(?:<[^>]*>[^>()]*)*)>\s*\(/g, (_match, fn, _typeArgs, _offset) => {
+    return `${fn}(`;
+  });
+
+  result = result.replace(/(?<=[\w)?\]])\s+as\s+\w[\w.<>,\s|[\]]*(?=\s*[;,)\]\n}])/g, '');
+
+  result = result.replace(/((?:const|let|var)\s+(?:\[[^\]]*\]|\w+))\s*:\s*\w[\w.<>,\s|[\]]*(?=\s*=)/g, '$1');
+
+  result = result.replace(/(\((?:[^()]*,\s*)?\w+)\s*:\s*\w[\w.<>,\s|[\]]*(?=\s*[,)=])/g, '$1');
+
+  result = result.replace(/(function\s+\w+\s*\([^)]*\))\s*:\s*\w[\w.<>,\s|[\]]*(?=\s*\{)/g, '$1');
+
+  return result;
 }
 
 function splitScriptParts(script: string): { imports: string[]; body: string } {
