@@ -1,0 +1,40 @@
+<script setup lang="ts">
+  import { createSignal } from 'tannijs';
+
+  const [count, setCount] = createSignal(0);
+
+  function increment() {
+    setCount((prev) => prev + 1);
+  }
+
+  function decrement() {
+    setCount((prev) => prev - 1);
+  }
+
+  function reset() {
+    setCount(0);
+  }
+</script>
+
+<template>
+  <main class="mx-auto max-w-md px-6 py-12">
+    <h1 class="mb-6 text-2xl font-bold">Tanni Playground</h1>
+    <section class="rounded-xl bg-white p-6 shadow-sm">
+      <p class="mb-4 text-lg">Count: {{ count() }}</p>
+      <div class="flex gap-2">
+        <button
+          class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700"
+          @click="increment"
+        >+1</button>
+        <button
+          class="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-sm text-white transition-colors hover:bg-red-700"
+          @click="decrement"
+        >-1</button>
+        <button
+          class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
+          @click="reset"
+        >Reset</button>
+      </div>
+    </section>
+  </main>
+</template>

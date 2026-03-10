@@ -20,7 +20,8 @@
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit --pretty false",
     "build": "pnpm -r run build",
-    "dev": "pnpm --filter tannijs run dev"
+    "dev": "pnpm --filter tannijs run dev",
+    "playground": "pnpm --filter playground run dev"
   },
   "repository": {
     "type": "git",
