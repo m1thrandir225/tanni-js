@@ -384,6 +384,7 @@ function rewriteScriptSetupProps(script: string): string {
 function stripTypeAnnotations(script: string): string {
   let result = script;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   result = result.replace(/\b(\w+)\s*<([^>()]*(?:<[^>]*>[^>()]*)*)>\s*\(/g, (_match, fn, _typeArgs, _offset) => {
     return `${fn}(`;
   });

@@ -24,19 +24,23 @@ There is an experimental `VSCode` extension, you can download it from the releas
 ## Create a project
 
 You can create a project using the following command:
+
 ```bash
 npx degit m1thrandir225/tanni-js/template <project_name>
 ```
+
 Next if run the setup.js file using Node:
+
 ```bash
 cd <project_name> && node setup.js
-``` 
+```
+
 where you will be asked to choose if you want Tailwind support or not & finally you can install the dependencies using any package manager of your choosing:
+
 ```bash
 npm/yarn/pnpm install 
 npm/yarn/pnpm run dev
 ```
-
 
 ## Roadmap
 
@@ -56,8 +60,8 @@ npm/yarn/pnpm run dev
 ### Working on Version 0.2
 
 - Scoped CSS with compile-time transformation
-- `tn-model` two-way binding
-- `tn-show` for CSS-based visibility toggle
+- `tn-model` two-waybinding ✔︎
+- `tn-show` for CSS-based visibility toggle ✔︎
 - Slots for content distribution
 - Lifecycle hooks (partially ✔︎)
 
@@ -81,3 +85,4 @@ npm/yarn/pnpm run dev
 - Performance benchmarks
 - Comprehensive documentation
 - Migration guides from Vue/React
+

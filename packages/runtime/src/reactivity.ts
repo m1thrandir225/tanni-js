@@ -56,6 +56,7 @@ class Memo<T> implements Source, Computation {
   public execute(): void {
     cleanupComputation(this);
     const previous = currentComputation;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     currentComputation = this;
 
     let nextValue!: T;
