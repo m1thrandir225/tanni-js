@@ -39,18 +39,12 @@ jobs:
 
       - name: Publish runtime (tannijs)
         working-directory: packages/runtime
-        run: pnpm publish --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Publish compiler (tannijs-compiler)
         working-directory: packages/compiler
-        run: pnpm publish --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Publish vite-plugin (vite-plugin-tannijs)
         working-directory: packages/vite-plugin
-        run: pnpm publish --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
