@@ -8,6 +8,7 @@ export interface SfcDescriptor {
   template: string;
   script: string;
   scriptLang: string | null;
+  scriptSetup: boolean;
   styles: SfcStyleBlock[];
 }
 
@@ -88,6 +89,8 @@ export interface DirectiveMap {
   elseIf?: string;
   else?: boolean;
   for?: ForDirective;
+  model?: string;
+  show?: string;
 }
 
 export interface ForDirective {

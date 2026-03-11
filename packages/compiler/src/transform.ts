@@ -60,6 +60,22 @@ function transformNode(node: TemplateNode): TransformNode {
       continue;
     }
 
+    if (attr.name === 'tn-model') {
+      if (!attr.value) {
+        throw new Error('tn-model requires an expression value.');
+      }
+      directives.model = attr.value;
+      continue;
+    }
+
+    if (attr.name === 'tn-show') {
+      if (!attr.value) {
+        throw new Error('tn-show requires an expression value.');
+      }
+      directives.show = attr.value;
+      continue;
+    }
+
     if (attr.name.startsWith(':')) {
       if (!attr.value) {
         throw new Error(`${attr.name} requires an expression value.`);

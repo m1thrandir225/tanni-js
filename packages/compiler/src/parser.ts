@@ -5,6 +5,7 @@ const SCRIPT_BLOCK = /<script\b([^>]*)>([\s\S]*?)<\/script>/i;
 const STYLE_BLOCK = /<style\b([^>]*)>([\s\S]*?)<\/style>/gi;
 const LANG_ATTR = /\blang\s*=\s*["']([^"']+)["']/i;
 const SCOPED_ATTR = /\bscoped\b/i;
+const SETUP_ATTR = /\bsetup\b/i;
 
 export function parseSfc(source: string): SfcDescriptor {
   const templateMatch = source.match(TEMPLATE_BLOCK);
@@ -35,6 +36,7 @@ export function parseSfc(source: string): SfcDescriptor {
     template: templateBlock.trim(),
     script: scriptMatch?.[2]?.trim() ?? '',
     scriptLang: scriptLangMatch?.[1] ?? null,
+    scriptSetup: SETUP_ATTR.test(scriptAttrs),
     styles,
   };
 }

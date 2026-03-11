@@ -3,10 +3,54 @@ import { describe, expect, it } from 'vitest';
 import { compileSfc } from './index';
 import { parseSfc } from './parser';
 
+describe('script setup backward compatibility', () => {
+  it('compiles <script setup> and <script> identically', () => {
+    const withSetup = `
+<script setup lang="ts">
+const count = () => 1;
+</script>
+<template>
+  <p>{{ count() }}</p>
+</template>
+`;
+    const withoutSetup = `
+<script lang="ts">
+const count = () => 1;
+</script>
+<template>
+  <p>{{ count() }}</p>
+</template>
+`;
+    const opts = { runtimeModule: 'tanni-runtime' };
+    const resultSetup = compileSfc(withSetup, opts);
+    const resultPlain = compileSfc(withoutSetup, opts);
+    expect(resultSetup.code).toBe(resultPlain.code);
+    expect(resultSetup.css).toBe(resultPlain.css);
+  });
+
+  it('parses scriptSetup flag correctly', () => {
+    const withSetup = parseSfc(`
+<script setup lang="ts">
+const x = 1;
+</script>
+<template><div /></template>
+`);
+    const withoutSetup = parseSfc(`
+<script lang="ts">
+const x = 1;
+</script>
+<template><div /></template>
+`);
+    expect(withSetup.scriptSetup).toBe(true);
+    expect(withoutSetup.scriptSetup).toBe(false);
+    expect(withSetup.script).toBe(withoutSetup.script);
+  });
+});
+
 describe('compileSfc', () => {
   it('compiles interpolation, bindings, events, tn-if and tn-for', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const count = () => 1;
 const visible = () => true;
 const items = () => ['a', 'b'];
@@ -35,7 +79,7 @@ function increment() {}
 
   it('rewrites defineProps macro to component props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 interface Props {
   title: string;
 }
@@ -54,7 +98,7 @@ const props = defineProps<Props>();
 describe('component detection', () => {
   it('detects PascalCase tags as components and emits function calls', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 import Counter from './Counter.tanni';
 </script>
 <template>
@@ -70,7 +114,7 @@ import Counter from './Counter.tanni';
 
   it('passes static attrs, bindings, and events as props to components', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 import MyComp from './MyComp.tanni';
 const val = () => 42;
 function handleClick() {}
@@ -88,7 +132,7 @@ function handleClick() {}
 
   it('emits getter props for dynamic bindings instead of wrapping in createEffect', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 import Counter from './Counter.tanni';
 const count = () => 5;
 </script>
@@ -104,7 +148,7 @@ const count = () => 5;
 
   it('treats lowercase tags as plain HTML elements', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <div>
@@ -121,7 +165,7 @@ const count = () => 5;
 describe('defineProps rewriting', () => {
   it('rewrites defineProps() with no args to __props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const props = defineProps();
 </script>
 <template>
@@ -134,7 +178,7 @@ const props = defineProps();
 
   it('rewrites defineProps<T>() with generic only to __props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 interface Props { title: string; }
 const props = defineProps<Props>();
 </script>
@@ -149,7 +193,7 @@ const props = defineProps<Props>();
 
   it('rewrites defineProps<T>({ defaults }) to spread with __props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 interface Props { count: number; onIncrement: () => void; }
 const props = defineProps<Props>({ count: 0 });
 </script>
@@ -165,7 +209,7 @@ const props = defineProps<Props>({ count: 0 });
 
   it('rewrites defineProps({ defaults }) without generic to Object.create with __props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const props = defineProps({ count: 0 });
 </script>
 <template>
@@ -178,7 +222,7 @@ const props = defineProps({ count: 0 });
 
   it('rewrites withDefaults(defineProps<T>(), { defaults }) to Object.create with __props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 interface Props { count: number; label: string; }
 const props = withDefaults(defineProps<Props>(), { count: 0, label: "hello" });
 </script>
@@ -194,7 +238,7 @@ const props = withDefaults(defineProps<Props>(), { count: 0, label: "hello" });
 
   it('rewrites withDefaults without generic to Object.create with __props', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const props = withDefaults(defineProps(), { count: 5 });
 </script>
 <template>
@@ -210,7 +254,7 @@ const props = withDefaults(defineProps(), { count: 5 });
 describe('style block extraction', () => {
   it('extracts a single style block', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <div>hello</div>
@@ -225,7 +269,7 @@ describe('style block extraction', () => {
 
   it('extracts multiple style blocks and concatenates them', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <div>hello</div>
@@ -244,7 +288,7 @@ describe('style block extraction', () => {
 
   it('returns empty css when no style block is present', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <div>hello</div>
@@ -256,7 +300,7 @@ describe('style block extraction', () => {
 
   it('parses style block lang and scoped attributes', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <div>hello</div>
@@ -275,7 +319,7 @@ describe('style block extraction', () => {
 describe('conditional directives (tn-if / tn-else-if / tn-else)', () => {
   it('compiles a standalone tn-if', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const show = () => true;
 </script>
 <template>
@@ -290,7 +334,7 @@ const show = () => true;
 
   it('compiles tn-if + tn-else chain', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const ok = () => true;
 </script>
 <template>
@@ -305,7 +349,7 @@ const ok = () => true;
 
   it('compiles tn-if + tn-else-if + tn-else chain with comparison operators', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const count = () => 5;
 </script>
 <template>
@@ -324,7 +368,7 @@ const count = () => 5;
 
   it('compiles multiple tn-else-if branches', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const v = () => 2;
 </script>
 <template>
@@ -343,7 +387,7 @@ const v = () => 2;
 
   it('throws on tn-else without preceding tn-if', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <p tn-else>Orphan</p>
@@ -356,7 +400,7 @@ const v = () => 2;
 
   it('throws on tn-else-if without preceding tn-if', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 </script>
 <template>
   <p tn-else-if="true">Orphan</p>
@@ -371,7 +415,7 @@ const v = () => 2;
 describe('comparison operators in attribute values', () => {
   it('handles > in tn-if expressions', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const n = () => 5;
 </script>
 <template>
@@ -384,7 +428,7 @@ const n = () => 5;
 
   it('handles < in tn-if expressions', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const n = () => 1;
 </script>
 <template>
@@ -397,7 +441,7 @@ const n = () => 1;
 
   it('handles >= and <= in tn-if expressions', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const n = () => 5;
 </script>
 <template>
@@ -412,7 +456,7 @@ const n = () => 5;
 
   it('handles !== and === in tn-if expressions', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const s = () => 'a';
 </script>
 <template>
@@ -427,7 +471,7 @@ const s = () => 'a';
 
   it('handles != and == in tn-if expressions', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const n = () => 5;
 </script>
 <template>
@@ -439,10 +483,219 @@ const n = () => 5;
     expect(code).toContain('if (n() != null)');
     expect(code).toContain('if (n() == 5)');
   });
+});
 
+describe('tn-model directive', () => {
+  it('binds text input with .value and "input" event', () => {
+    const source = `
+<script lang="ts">
+const [name, setName] = createSignal('');
+</script>
+<template>
+  <input tn-model="name()" />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('.value = name()');
+    expect(code).toContain('addEventListener("input"');
+    expect(code).toContain('setName(e.target.value)');
+    expect(code).toContain('createEffect(() => {');
+  });
+
+  it('binds textarea with .value and "input" event', () => {
+    const source = `
+<script lang="ts">
+const [content, setContent] = createSignal('');
+</script>
+<template>
+  <textarea tn-model="content()"></textarea>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('.value = content()');
+    expect(code).toContain('addEventListener("input"');
+    expect(code).toContain('setContent(e.target.value)');
+  });
+
+  it('binds checkbox with .checked and "change" event', () => {
+    const source = `
+<script lang="ts">
+const [agreed, setAgreed] = createSignal(false);
+</script>
+<template>
+  <input type="checkbox" tn-model="agreed()" />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('.checked = agreed()');
+    expect(code).toContain('addEventListener("change"');
+    expect(code).toContain('setAgreed(e.target.checked)');
+    expect(code).not.toContain('e.target.value');
+  });
+
+  it('binds radio with .checked comparison and "change" event', () => {
+    const source = `
+<script lang="ts">
+const [color, setColor] = createSignal('red');
+</script>
+<template>
+  <input type="radio" value="red" tn-model="color()" />
+  <input type="radio" value="blue" tn-model="color()" />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('.checked = (color() ===');
+    expect(code).toContain('addEventListener("change"');
+    expect(code).toContain('setColor(e.target.value)');
+    expect(code).not.toContain('e.target.checked');
+  });
+
+  it('binds select with .value and "change" event', () => {
+    const source = `
+<script lang="ts">
+const [choice, setChoice] = createSignal('a');
+</script>
+<template>
+  <select tn-model="choice()">
+    <option value="a">A</option>
+    <option value="b">B</option>
+  </select>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('.value = choice()');
+    expect(code).toContain('addEventListener("change"');
+    expect(code).toContain('setChoice(e.target.value)');
+  });
+
+  it('supports expression without parentheses', () => {
+    const source = `
+<script lang="ts">
+const [name, setName] = createSignal('');
+</script>
+<template>
+  <input tn-model="name" />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('.value = name()');
+    expect(code).toContain('setName(e.target.value)');
+  });
+
+  it('wraps binding in createEffect for reactivity', () => {
+    const source = `
+<script lang="ts">
+const [text, setText] = createSignal('');
+</script>
+<template>
+  <input tn-model="text()" />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    const effectCount = (code.match(/createEffect\(\(\) => \{/g) ?? []).length;
+    expect(effectCount).toBeGreaterThanOrEqual(1);
+    expect(code).toContain('.value = text()');
+  });
+
+  it('handles tn-model alongside other attributes', () => {
+    const source = `
+<script lang="ts">
+const [email, setEmail] = createSignal('');
+</script>
+<template>
+  <input type="text" class="field" placeholder="Email" tn-model="email()" />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('setAttribute("type", "text")');
+    expect(code).toContain('setAttribute("class", "field")');
+    expect(code).toContain('setAttribute("placeholder", "Email")');
+    expect(code).toContain('.value = email()');
+    expect(code).toContain('setEmail(e.target.value)');
+  });
+});
+
+describe('tn-show directive', () => {
+  it('emits style.display toggle inside createEffect', () => {
+    const source = `
+<script lang="ts">
+const visible = () => true;
+</script>
+<template>
+  <div tn-show="visible()">Hello</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('createEffect(() => {');
+    expect(code).toContain(".style.display = (visible()) ? '' : 'none'");
+  });
+
+  it('works with a complex expression', () => {
+    const source = `
+<script lang="ts">
+const count = () => 5;
+</script>
+<template>
+  <p tn-show="count() > 0">Positive</p>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain(".style.display = (count() > 0) ? '' : 'none'");
+  });
+
+  it('works alongside other attributes and bindings', () => {
+    const source = `
+<script lang="ts">
+const active = () => true;
+const cls = () => 'highlight';
+</script>
+<template>
+  <span class="tag" :data-cls="cls()" tn-show="active()">Tag</span>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('setAttribute("class", "tag")');
+    expect(code).toContain('.setAttribute("data-cls"');
+    expect(code).toContain(".style.display = (active()) ? '' : 'none'");
+  });
+
+  it('works alongside tn-for', () => {
+    const source = `
+<script lang="ts">
+const items = () => [1, 2, 3];
+const show = () => true;
+</script>
+<template>
+  <ul>
+    <li tn-for="item in items()" tn-show="show()">{{ item }}</li>
+  </ul>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("document.createComment('tn-for')");
+    expect(code).toContain(".style.display = (show()) ? '' : 'none'");
+  });
+
+  it('creates a separate effect from other bindings', () => {
+    const source = `
+<script lang="ts">
+const visible = () => true;
+</script>
+<template>
+  <div tn-show="visible()">content</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    const effectCount = (code.match(/createEffect\(\(\) => \{/g) ?? []).length;
+    expect(effectCount).toBeGreaterThanOrEqual(1);
+    expect(code).toContain(".style.display = (visible()) ? '' : 'none'");
+  });
+});
+
+describe('comparison operators in attribute values', () => {
   it('handles > in dynamic attribute bindings', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const n = () => 5;
 </script>
 <template>
@@ -455,7 +708,7 @@ const n = () => 5;
 
   it('handles > in tn-else-if expressions', () => {
     const source = `
-<script setup lang="ts">
+<script lang="ts">
 const n = () => 5;
 </script>
 <template>

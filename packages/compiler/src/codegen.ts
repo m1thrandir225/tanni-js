@@ -191,9 +191,67 @@ function emitPlainElement(context: CodegenContext, node: TransformElementNode, p
     );
   }
 
+  if (node.directives.model) {
+    emitModelBinding(context, node, elementName);
+  }
+
+  if (node.directives.show) {
+    pushLine(context, 'createEffect(() => {');
+    context.indent += 1;
+    pushLine(context, `${elementName}.style.display = (${node.directives.show}) ? '' : 'none';`);
+    context.indent -= 1;
+    pushLine(context, '});');
+  }
+
   emitChildren(context, node.children, elementName);
 
   return elementName;
+}
+
+function emitModelBinding(context: CodegenContext, node: TransformElementNode, elementName: string): void {
+  const raw = node.directives.model!.trim();
+  const signalName = raw.replace(/\(\)$/, '');
+  const setterName = `set${signalName.charAt(0).toUpperCase()}${signalName.slice(1)}`;
+  const getter = raw.endsWith('()') ? raw : `${raw}()`;
+
+  const inputType = resolveInputType(node);
+
+  if (node.tag === 'select') {
+    pushLine(context, 'createEffect(() => {');
+    context.indent += 1;
+    pushLine(context, `${elementName}.value = ${getter};`);
+    context.indent -= 1;
+    pushLine(context, '});');
+    pushLine(context, `${elementName}.addEventListener("change", (e) => ${setterName}(e.target.value));`);
+  } else if (inputType === 'checkbox') {
+    pushLine(context, 'createEffect(() => {');
+    context.indent += 1;
+    pushLine(context, `${elementName}.checked = ${getter};`);
+    context.indent -= 1;
+    pushLine(context, '});');
+    pushLine(context, `${elementName}.addEventListener("change", (e) => ${setterName}(e.target.checked));`);
+  } else if (inputType === 'radio') {
+    pushLine(context, 'createEffect(() => {');
+    context.indent += 1;
+    pushLine(context, `${elementName}.checked = (${getter} === ${elementName}.value);`);
+    context.indent -= 1;
+    pushLine(context, '});');
+    pushLine(context, `${elementName}.addEventListener("change", (e) => ${setterName}(e.target.value));`);
+  } else {
+    pushLine(context, 'createEffect(() => {');
+    context.indent += 1;
+    pushLine(context, `${elementName}.value = ${getter};`);
+    context.indent -= 1;
+    pushLine(context, '});');
+    pushLine(context, `${elementName}.addEventListener("input", (e) => ${setterName}(e.target.value));`);
+  }
+}
+
+function resolveInputType(node: TransformElementNode): string | null {
+  for (const attr of node.attributes) {
+    if (attr.name === 'type') return attr.value;
+  }
+  return null;
 }
 
 function emitComponentElement(context: CodegenContext, node: TransformElementNode, parentName: string): string {
@@ -304,7 +362,10 @@ function emitForNode(context: CodegenContext, node: TransformElementNode, parent
 function removeControlFlow(node: TransformElementNode): TransformElementNode {
   return {
     ...node,
-    directives: {},
+    directives: {
+      ...(node.directives.model != null && { model: node.directives.model }),
+      ...(node.directives.show != null && { show: node.directives.show }),
+    },
   };
 }
 
