@@ -3,73 +3,121 @@
   import TodoComponent from "./components/Todo.tanni";
   import type { Todo } from './types/todo';
 
-  const [todos, setTodos] = createSignal<Todo[]>([
-    { id: 1, label: 'Write parser MVP', isDone: false },
-  ]);
+  const [todos, setTodos] = createSignal<Todo[]>([]);
   const [filter, setFilter] = createSignal('all');
-  
+  const [newTodo, setNewTodo] = createSignal('');
+
   const visibleTodos = createMemo(() => {
     const mode = filter();
     return todos().filter((todo) => {
       if (mode === 'active') return !todo.isDone;
-      if (mode === 'done') return todo.isDone;
+      if (mode === 'completed') return todo.isDone;
       return true;
     });
   });
-  
+
+  const activeCount = createMemo(() => todos().filter((t) => !t.isDone).length);
+  const completedCount = createMemo(() => todos().filter((t) => t.isDone).length);
+  const allDone = createMemo(() => todos().length > 0 && activeCount() === 0);
+
+  function addTodo() {
+    const label = newTodo().trim();
+    if (!label) return;
+    const nextId = todos().length === 0 ? 1 : Math.max(...todos().map((t) => t.id)) + 1;
+    setTodos((prev) => [...prev, { id: nextId, label, isDone: false }]);
+    setNewTodo('');
+  }
+
+  function handleNewTodoKeydown(e) {
+    if (e.key === 'Enter') addTodo();
+  }
+
   function toggleTodo(id) {
     setTodos((prev) =>
       prev.map((todo) => (todo.id === id ? { ...todo, isDone: !todo.isDone } : todo))
     );
   }
-  
+
+  function toggleAll() {
+    const markDone = !allDone();
+    setTodos((prev) => prev.map((todo) => ({ ...todo, isDone: markDone })));
+  }
+
   function removeTodo(id) {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   }
-  
-  function addTodo() {
-    const nextId = todos().length === 0 ? 1 : Math.max(...todos().map((todo) => todo.id)) + 1;
-    setTodos((prev) => [
-      ...prev,
-      { id: nextId, label: `Todo ${nextId}`, isDone: false },
-    ]);
+
+  function clearCompleted() {
+    setTodos((prev) => prev.filter((todo) => !todo.isDone));
   }
-  </script>
-  
-  <template>
-    <main class="mx-auto max-w-md px-6 py-12">
-      <h1 class="mb-6 text-2xl font-bold">Tanni Todo</h1>
-      <section class="rounded-xl bg-white p-6 shadow-sm">
-        <p class="mb-2">Total: {{ todos().length }}</p>
+</script>
+
+<template>
+  <main class="mx-auto max-w-lg px-6 py-12">
+    <h1 class="mb-8 text-center text-6xl font-thin text-red-300">todos</h1>
+    <section class="overflow-hidden rounded-lg bg-white shadow-lg">
+      <div class="flex items-center border-b border-gray-200">
         <button
-          class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700"
-          @click="addTodo"
-        >Add todo</button>
-  
-        <div class="my-3 flex gap-2">
+          tn-if="todos().length > 0"
+          class="cursor-pointer px-4 py-4 text-xl text-gray-400 transition-colors hover:text-gray-600"
+          :class="allDone() ? 'text-gray-600' : 'text-gray-300'"
+          @click="toggleAll"
+        >❯</button>
+        <input
+          type="text"
+          placeholder="What needs to be done?"
+          class="flex-1 px-4 py-4 text-lg outline-none"
+          tn-model="newTodo"
+          @keydown="handleNewTodoKeydown"
+        />
+      </div>
+
+      <ul tn-if="visibleTodos().length > 0" class="list-none divide-y divide-gray-100">
+        <TodoComponent
+          tn-for="todo in visibleTodos()"
+          :key="todo.id"
+          :todo="todo"
+          @toggle="toggleTodo"
+          @delete="removeTodo"
+        />
+      </ul>
+
+      <p tn-if="todos().length > 0 && visibleTodos().length === 0" class="px-4 py-3 text-center text-sm text-gray-400">
+        No todos match this filter.
+      </p>
+
+      <footer tn-if="todos().length > 0" class="flex items-center justify-between px-4 py-3 text-sm text-gray-500">
+        <span>{{ activeCount() }} {{ activeCount() === 1 ? 'item' : 'items' }} left</span>
+        <div class="flex gap-1">
           <button
-            class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
-            :data-active="filter() === 'all'"
+            class="cursor-pointer rounded border px-2 py-1 transition-colors"
+            :class="filter() === 'all' ? 'border-red-200' : 'border-transparent hover:border-gray-200'"
             @click="setFilter('all')"
           >All</button>
           <button
-            class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
-            :data-active="filter() === 'active'"
+            class="cursor-pointer rounded border px-2 py-1 transition-colors"
+            :class="filter() === 'active' ? 'border-red-200' : 'border-transparent hover:border-gray-200'"
             @click="setFilter('active')"
           >Active</button>
           <button
-            class="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-900 transition-colors hover:bg-gray-300"
-            :data-active="filter() === 'done'"
-            @click="setFilter('done')"
-          >Done</button>
+            class="cursor-pointer rounded border px-2 py-1 transition-colors"
+            :class="filter() === 'completed' ? 'border-red-200' : 'border-transparent hover:border-gray-200'"
+            @click="setFilter('completed')"
+          >Completed</button>
         </div>
-  
-        <p tn-if="visibleTodos().length === 0" class="text-sm text-gray-400">No todos for this filter.</p>
-  
-        <ul class="mt-3 list-none">
-          <TodoComponent tn-for="todo in visibleTodos()" :key="todo.id" :todo="todo" @toggle="toggleTodo" @delete="removeTodo" />
-        </ul>
-      </section>
-    </main>
-  </template>
-  
+        <button
+          tn-if="completedCount() > 0"
+          class="cursor-pointer transition-colors hover:underline"
+          @click="clearCompleted"
+        >Clear completed</button>
+        <span tn-else></span>
+      </footer>
+    </section>
+  </main>
+</template>
+
+<style>
+  body {
+    background-color: #f5f5f5;
+  }
+</style>

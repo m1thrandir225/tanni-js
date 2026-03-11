@@ -12,11 +12,11 @@
     "tannijs": "latest"
   },
   "devDependencies": {
-    "vite": "^7.3.1",
-    "vite-plugin-tannijs": "latest",
+    "@tailwindcss/vite": "^4.2.1",
+    "tailwindcss": "^4.2.1",
     "tannijs-compiler": "latest",
     "typescript": "^5.9.3",
-    "tailwindcss": "^4.2.0",
-    "@tailwindcss/vite": "^4.2.0"
+    "vite": "^7.3.1",
+    "vite-plugin-tannijs": "latest"
   }
 }
