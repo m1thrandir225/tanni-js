@@ -2,6 +2,7 @@
   import { createSignal } from 'tannijs';
 
   const [count, setCount] = createSignal(0);
+  const [name, setName] = createSignal('example input');
 
   function increment() {
     setCount((prev) => prev + 1);
@@ -35,6 +36,16 @@
           @click="reset"
         >Reset</button>
       </div>
+    </section>
+    <section class="mt-6 rounded-xl bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-lg font-semibold">tn-model binding</h2>
+      <input
+        type="text"
+        placeholder="Type your name…"
+        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+        tn-model="name"
+      />
+      <p class="mt-3 text-sm text-gray-600">Hello, {{ name() }}!</p>
     </section>
   </main>
 </template>
