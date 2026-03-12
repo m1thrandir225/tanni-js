@@ -9,16 +9,16 @@ concurrency:
   group: npm-release
   cancel-in-progress: false
 
+permissions:
+    contents: read
+    id-token: write
+
 jobs:
   publish:
     name: Build & Publish to NPM
     runs-on: ubuntu-latest
 
     environment: production
-
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - uses: actions/checkout@v4
