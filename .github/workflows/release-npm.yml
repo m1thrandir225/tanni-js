@@ -9,16 +9,15 @@ concurrency:
   group: npm-release
   cancel-in-progress: false
 
-permissions:
-    contents: read
-    id-token: write
-
 jobs:
   publish:
     name: Build & Publish to NPM
     runs-on: ubuntu-latest
 
     environment: production
+
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -41,12 +40,18 @@ jobs:
 
       - name: Publish runtime (tannijs)
         working-directory: packages/runtime
-        run: npm publish --access public
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish compiler (tannijs-compiler)
         working-directory: packages/compiler
-        run: npm publish --access public
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish vite-plugin (vite-plugin-tannijs)
         working-directory: packages/vite-plugin
-        run: npm publish --access public
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
