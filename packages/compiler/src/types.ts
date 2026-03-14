@@ -109,6 +109,7 @@ export interface CompileOptions {
   id?: string;
   runtimeModule?: string;
   componentName?: string;
+  scopeId?: string;
 }
 
 export interface CompileResult {

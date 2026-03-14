@@ -1,6 +1,6 @@
 {
   "name": "tannijs-compiler",
-  "version": "0.2.2",
+  "version": "0.2.5",
   "type": "module",
   "description": "SFC compiler for the Tanni framework",
   "license": "MIT",

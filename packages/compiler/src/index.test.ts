@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { compileSfc } from './index';
 import { parseSfc } from './parser';
+import { scopeCSS } from './scopeCSS';
 
 describe('script setup backward compatibility', () => {
   it('compiles <script setup> and <script> identically', () => {
@@ -986,5 +987,221 @@ onMount(() => {
     expect(code).toContain('onMount(() => {');
     expect(code).toContain("el?.focus()");
     expect(code).toContain('export default function Component(__props = {}) {');
+  });
+});
+
+describe('scopeCSS utility', () => {
+  it('appends scope attribute to a simple class selector', () => {
+    const result = scopeCSS('.app { color: red; }', 'data-tn-abc');
+    expect(result).toContain('.app[data-tn-abc]');
+    expect(result).toContain('color: red;');
+  });
+
+  it('appends scope attribute to a tag selector', () => {
+    const result = scopeCSS('div { margin: 0; }', 'data-tn-abc');
+    expect(result).toContain('div[data-tn-abc]');
+  });
+
+  it('appends scope attribute to an id selector', () => {
+    const result = scopeCSS('#main { padding: 10px; }', 'data-tn-abc');
+    expect(result).toContain('#main[data-tn-abc]');
+  });
+
+  it('scopes the last part of a descendant combinator', () => {
+    const result = scopeCSS('.parent .child { color: blue; }', 'data-tn-abc');
+    expect(result).toContain('.parent .child[data-tn-abc]');
+  });
+
+  it('scopes the last part of a child combinator', () => {
+    const result = scopeCSS('.parent > .child { color: blue; }', 'data-tn-abc');
+    expect(result).toContain('.parent > .child[data-tn-abc]');
+  });
+
+  it('handles comma-separated selectors', () => {
+    const result = scopeCSS('h1, h2, h3 { font-weight: bold; }', 'data-tn-abc');
+    expect(result).toContain('h1[data-tn-abc]');
+    expect(result).toContain('h2[data-tn-abc]');
+    expect(result).toContain('h3[data-tn-abc]');
+  });
+
+  it('preserves pseudo-elements after the scope attribute', () => {
+    const result = scopeCSS('.btn::before { content: ""; }', 'data-tn-abc');
+    expect(result).toContain('.btn[data-tn-abc]::before');
+  });
+
+  it('inserts scope attribute before pseudo-classes', () => {
+    const result = scopeCSS('.link:hover { color: red; }', 'data-tn-abc');
+    expect(result).toContain('.link[data-tn-abc]:hover');
+  });
+
+  it('handles multiple rules', () => {
+    const css = '.a { color: red; }\n.b { color: blue; }';
+    const result = scopeCSS(css, 'data-tn-abc');
+    expect(result).toContain('.a[data-tn-abc]');
+    expect(result).toContain('.b[data-tn-abc]');
+  });
+});
+
+describe('scoped CSS integration', () => {
+  it('adds data-tn-* attribute to all template elements when style is scoped', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <p>Hello</p>
+  </div>
+</template>
+<style scoped>
+.app { color: red; }
+</style>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'App.tanni' });
+    expect(code).toMatch(/\.setAttribute\("data-tn-[\w]+", ""\)/);
+    const attrMatches = code.match(/\.setAttribute\("data-tn-[\w]+", ""\)/g) ?? [];
+    expect(attrMatches.length).toBe(2);
+  });
+
+  it('rewrites scoped CSS selectors with the scope attribute', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div class="app">Hello</div>
+</template>
+<style scoped>
+.app { color: red; }
+</style>
+`;
+    const { css } = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'App.tanni' });
+    expect(css).toMatch(/\.app\[data-tn-[\w]+\]/);
+    expect(css).toContain('color: red;');
+    expect(css).not.toBe('.app { color: red; }');
+  });
+
+  it('does not add scope attribute when style is not scoped', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>Hello</div>
+</template>
+<style>
+.app { color: red; }
+</style>
+`;
+    const { code, css } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).not.toMatch(/\.setAttribute\("data-tn-/);
+    expect(css).toBe('.app { color: red; }');
+  });
+
+  it('scopes only scoped style blocks when mixed with unscoped', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>Hello</div>
+</template>
+<style>
+.global { color: green; }
+</style>
+<style scoped>
+.local { color: red; }
+</style>
+`;
+    const { css } = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'Mixed.tanni' });
+    expect(css).toContain('.global { color: green; }');
+    expect(css).toMatch(/\.local\[data-tn-[\w]+\]/);
+  });
+
+  it('uses consistent scope ID across code and CSS', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>Hello</div>
+</template>
+<style scoped>
+div { color: red; }
+</style>
+`;
+    const { code, css } = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'Consistent.tanni' });
+    const codeAttrMatch = code.match(/setAttribute\("(data-tn-[\w]+)"/);
+    const cssAttrMatch = css.match(/\[(data-tn-[\w]+)\]/);
+    expect(codeAttrMatch).not.toBeNull();
+    expect(cssAttrMatch).not.toBeNull();
+    expect(codeAttrMatch![1]).toBe(cssAttrMatch![1]);
+  });
+
+  it('generates deterministic scope ID from the id option', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>Hello</div>
+</template>
+<style scoped>
+div { color: red; }
+</style>
+`;
+    const result1 = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'Same.tanni' });
+    const result2 = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'Same.tanni' });
+    expect(result1.css).toBe(result2.css);
+    expect(result1.code).toBe(result2.code);
+  });
+
+  it('generates different scope IDs for different file ids', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>Hello</div>
+</template>
+<style scoped>
+div { color: red; }
+</style>
+`;
+    const result1 = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'FileA.tanni' });
+    const result2 = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'FileB.tanni' });
+    const id1 = result1.css.match(/\[(data-tn-[\w]+)\]/)?.[1];
+    const id2 = result2.css.match(/\[(data-tn-[\w]+)\]/)?.[1];
+    expect(id1).not.toBe(id2);
+  });
+
+  it('adds scope attribute to nested elements', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <ul>
+      <li>Item</li>
+    </ul>
+  </div>
+</template>
+<style scoped>
+li { color: red; }
+</style>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'Nested.tanni' });
+    const attrMatches = code.match(/\.setAttribute\("data-tn-[\w]+", ""\)/g) ?? [];
+    expect(attrMatches.length).toBe(3);
+  });
+
+  it('scopes CSS with descendant and child combinators', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div><span>text</span></div>
+</template>
+<style scoped>
+.parent .child { color: red; }
+.parent > .child { margin: 0; }
+</style>
+`;
+    const { css } = compileSfc(source, { runtimeModule: 'tanni-runtime', id: 'Comb.tanni' });
+    expect(css).toMatch(/\.parent \.child\[data-tn-[\w]+\]/);
+    expect(css).toMatch(/\.parent > \.child\[data-tn-[\w]+\]/);
   });
 });

@@ -5,6 +5,7 @@ interface CodegenContext {
   indent: number;
   identifier: number;
   delegatedEvents: Set<string>;
+  scopeId: string | null;
 }
 
 const DEFAULT_RUNTIME_MODULE = 'tannijs/internals';
@@ -21,6 +22,7 @@ export function generate(root: TransformRoot, script: string, options: CompileOp
     indent: 0,
     identifier: 0,
     delegatedEvents: new Set<string>(),
+    scopeId: options.scopeId ?? null,
   };
 
   for (const scriptImport of scriptParts.imports) {
@@ -167,6 +169,10 @@ function emitPlainElement(context: CodegenContext, node: TransformElementNode, p
   const elementName = declareNode(context, `document.createElement(${JSON.stringify(node.tag)})`);
   pushLine(context, `${parentName}.append(${elementName});`);
 
+  if (context.scopeId) {
+    pushLine(context, `${elementName}.setAttribute(${JSON.stringify(context.scopeId)}, "");`);
+  }
+
   for (const attr of node.attributes) {
     pushLine(context, `${elementName}.setAttribute(${JSON.stringify(attr.name)}, ${JSON.stringify(attr.value)});`);
   }
@@ -290,6 +296,7 @@ function emitComponentElement(context: CodegenContext, node: TransformElementNod
         indent: 0,
         identifier: context.identifier,
         delegatedEvents: context.delegatedEvents,
+        scopeId: context.scopeId,
       };
       const fragName = declareNode(slotFnContext, 'document.createDocumentFragment()');
       emitChildren(slotFnContext, slotChildren, fragName);

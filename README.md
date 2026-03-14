@@ -44,7 +44,7 @@ npm/yarn/pnpm run dev
 
 ## Roadmap
 
-### Current version: 0.1
+### Version: 0.1
 
 - Reactive state ✔︎
 - Computed Values ✔︎
@@ -57,22 +57,22 @@ npm/yarn/pnpm run dev
 - Component Props ✔︎
 - Typescript Support ✔︎
 
-### Working on Version 0.2
+### Current Version 0.2
 
 - Scoped CSS with compile-time transformation
 - `tn-model` two-waybinding ✔︎
 - `tn-show` for CSS-based visibility toggle ✔︎
-- Slots for content distribution
-- Lifecycle hooks (partially ✔︎)
+- Slots for content distribution ✔ ︎
+- Lifecycle hooks ✔︎
 
-### Version 0.3
+### Version 0.3 (TODO)
 
 - Async components and lazy loading
 - Error boundaries
 - Teleport for portals
 - Transition support
 
-### Version 0.4
+### Version 0.4 (TODO)
 
 - Server-side rendering (SSR)
 - Hydration with partial hydration support
@@ -85,4 +85,3 @@ npm/yarn/pnpm run dev
 - Performance benchmarks
 - Comprehensive documentation
 - Migration guides from Vue/React
-
