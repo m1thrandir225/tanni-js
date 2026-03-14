@@ -1,3 +1,3 @@
-export { createEffect } from './reactivity';
+export { createEffect, onMount, onCleanup } from './reactivity';
 export { delegateEvents, template, insert, spread } from './dom';
 export type { InsertValue } from './dom';

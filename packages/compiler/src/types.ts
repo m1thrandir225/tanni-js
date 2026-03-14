@@ -58,6 +58,11 @@ export type TextSegment =
       expression: string;
     };
 
+export interface SlotDefinition {
+  name: string;
+  children: TransformNode[];
+}
+
 export interface TransformElementNode {
   type: 'Element';
   tag: string;
@@ -67,6 +72,7 @@ export interface TransformElementNode {
   events: EventBinding[];
   directives: DirectiveMap;
   children: TransformNode[];
+  slots?: Map<string, TransformNode[]>;
 }
 
 export interface StaticAttribute {

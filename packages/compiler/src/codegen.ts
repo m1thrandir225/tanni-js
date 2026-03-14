@@ -8,6 +8,7 @@ interface CodegenContext {
 }
 
 const DEFAULT_RUNTIME_MODULE = 'tannijs/internals';
+const LIFECYCLE_HOOKS = ['onMount', 'onCleanup'] as const;
 
 export function generate(root: TransformRoot, script: string, options: CompileOptions = {}): CompileResult {
   const runtimeModule = options.runtimeModule ?? DEFAULT_RUNTIME_MODULE;
@@ -29,7 +30,13 @@ export function generate(root: TransformRoot, script: string, options: CompileOp
     pushLine(context, '');
   }
 
-  pushLine(context, `import { createEffect, delegateEvents } from '${runtimeModule}';`);
+  const runtimeImports = ['createEffect', 'delegateEvents'];
+  for (const hook of LIFECYCLE_HOOKS) {
+    if (scriptParts.body.includes(hook)) {
+      runtimeImports.push(hook);
+    }
+  }
+  pushLine(context, `import { ${runtimeImports.join(', ')} } from '${runtimeModule}';`);
   pushLine(context, '');
   pushLine(context, `export default function ${componentName}(__props = {}) {`);
   context.indent += 1;
@@ -153,6 +160,10 @@ function emitPlainElement(context: CodegenContext, node: TransformElementNode, p
     return emitComponentElement(context, node, parentName);
   }
 
+  if (node.tag === 'slot') {
+    return emitSlotOutlet(context, node, parentName);
+  }
+
   const elementName = declareNode(context, `document.createElement(${JSON.stringify(node.tag)})`);
   pushLine(context, `${parentName}.append(${elementName});`);
 
@@ -271,14 +282,53 @@ function emitComponentElement(context: CodegenContext, node: TransformElementNod
     propEntries.push(`${JSON.stringify(eventPropName)}: ${handlerExpr}`);
   }
 
+  if (node.slots && node.slots.size > 0) {
+    const slotEntries: string[] = [];
+    for (const [slotName, slotChildren] of node.slots) {
+      const slotFnContext: CodegenContext = {
+        lines: [],
+        indent: 0,
+        identifier: context.identifier,
+        delegatedEvents: context.delegatedEvents,
+      };
+      const fragName = declareNode(slotFnContext, 'document.createDocumentFragment()');
+      emitChildren(slotFnContext, slotChildren, fragName);
+      pushLine(slotFnContext, `return ${fragName};`);
+      context.identifier = slotFnContext.identifier;
+
+      const slotBody = slotFnContext.lines.map((l) => `    ${l}`).join('\n');
+      slotEntries.push(`${JSON.stringify(slotName)}: () => {\n${slotBody}\n  }`);
+    }
+    propEntries.push(`"__slots": { ${slotEntries.join(', ')} }`);
+  }
+
   const propsArg = propEntries.length > 0 ? `{ ${propEntries.join(', ')} }` : '{}';
 
   const componentName = declareNode(context, `${node.tag}(${propsArg})`);
   pushLine(context, `${parentName}.append(${componentName});`);
 
-  emitChildren(context, node.children, componentName);
-
   return componentName;
+}
+
+function emitSlotOutlet(context: CodegenContext, node: TransformElementNode, parentName: string): string {
+  const slotName = node.attributes.find((a) => a.name === 'name')?.value || 'default';
+  const slotContentName = createIdentifier(context, 'slotContent');
+
+  pushLine(context, `const ${slotContentName} = __props.__slots?.[${JSON.stringify(slotName)}]?.();`);
+  pushLine(context, `if (${slotContentName}) {`);
+  context.indent += 1;
+  pushLine(context, `${parentName}.append(${slotContentName});`);
+  context.indent -= 1;
+
+  if (node.children.length > 0) {
+    pushLine(context, '} else {');
+    context.indent += 1;
+    emitChildren(context, node.children, parentName);
+    context.indent -= 1;
+  }
+
+  pushLine(context, '}');
+  return slotContentName;
 }
 
 function emitConditionalChain(context: CodegenContext, chain: TransformElementNode[], parentName: string): void {

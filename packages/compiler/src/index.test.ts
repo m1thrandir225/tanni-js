@@ -723,3 +723,268 @@ const n = () => 5;
     expect(code).toContain('} else {');
   });
 });
+
+describe('slots', () => {
+  it('passes default slot content as __slots prop to component', () => {
+    const source = `
+<script lang="ts">
+import Card from './Card.tanni';
+</script>
+<template>
+  <Card>
+    <p>Hello world</p>
+  </Card>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('Card(');
+    expect(code).toContain('"__slots"');
+    expect(code).toContain('"default"');
+    expect(code).toContain('document.createElement("p")');
+    expect(code).toContain('createDocumentFragment()');
+  });
+
+  it('passes named slot content via <template slot="name">', () => {
+    const source = `
+<script lang="ts">
+import Layout from './Layout.tanni';
+</script>
+<template>
+  <Layout>
+    <template slot="header">
+      <h1>Title</h1>
+    </template>
+    <template slot="footer">
+      <p>Footer text</p>
+    </template>
+  </Layout>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('"__slots"');
+    expect(code).toContain('"header"');
+    expect(code).toContain('"footer"');
+    expect(code).toContain('document.createElement("h1")');
+    expect(code).toContain('document.createElement("p")');
+  });
+
+  it('supports mixed default and named slots', () => {
+    const source = `
+<script lang="ts">
+import Panel from './Panel.tanni';
+</script>
+<template>
+  <Panel>
+    <template slot="title">
+      <h2>My Title</h2>
+    </template>
+    <p>Default content</p>
+  </Panel>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('"__slots"');
+    expect(code).toContain('"title"');
+    expect(code).toContain('"default"');
+    expect(code).toContain('document.createElement("h2")');
+    expect(code).toContain('document.createElement("p")');
+  });
+
+  it('renders <slot /> outlet calling __props.__slots.default', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <slot />
+  </div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('__props.__slots?.["default"]?.()');
+  });
+
+  it('renders named <slot name="x" /> outlet', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <slot name="header" />
+    <slot name="footer" />
+  </div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('__props.__slots?.["header"]?.()');
+    expect(code).toContain('__props.__slots?.["footer"]?.()');
+  });
+
+  it('renders fallback content when no slot is provided', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <slot>
+      <p>Fallback content</p>
+    </slot>
+  </div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('__props.__slots?.["default"]?.()');
+    expect(code).toContain('} else {');
+    expect(code).toContain('document.createElement("p")');
+  });
+
+  it('renders named slot fallback content', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <slot name="actions">
+      <button>Default Action</button>
+    </slot>
+  </div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('__props.__slots?.["actions"]?.()');
+    expect(code).toContain('} else {');
+    expect(code).toContain('document.createElement("button")');
+  });
+
+  it('does not emit else branch for self-closing <slot />', () => {
+    const source = `
+<script lang="ts">
+</script>
+<template>
+  <div>
+    <slot />
+  </div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('__props.__slots?.["default"]?.()');
+    expect(code).not.toContain('} else {');
+  });
+
+  it('does not pass __slots when component has no children', () => {
+    const source = `
+<script lang="ts">
+import Empty from './Empty.tanni';
+</script>
+<template>
+  <Empty />
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('Empty(');
+    expect(code).not.toContain('__slots');
+  });
+
+  it('slot functions return a DocumentFragment', () => {
+    const source = `
+<script lang="ts">
+import Wrapper from './Wrapper.tanni';
+</script>
+<template>
+  <Wrapper>
+    <span>child</span>
+  </Wrapper>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('"default": () => {');
+    expect(code).toContain('document.createDocumentFragment()');
+    expect(code).toContain('return __node');
+  });
+});
+
+describe('lifecycle hooks auto-import', () => {
+  it('adds onMount to runtime import when used in script', () => {
+    const source = `
+<script lang="ts">
+onMount(() => {
+  console.log('mounted');
+});
+</script>
+<template>
+  <div>hello</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("import { createEffect, delegateEvents, onMount } from 'tanni-runtime';");
+    expect(code).toContain('onMount(() => {');
+  });
+
+  it('adds onCleanup to runtime import when used in script', () => {
+    const source = `
+<script lang="ts">
+const interval = setInterval(() => {}, 1000);
+onCleanup(() => clearInterval(interval));
+</script>
+<template>
+  <div>hello</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("import { createEffect, delegateEvents, onCleanup } from 'tanni-runtime';");
+    expect(code).toContain('onCleanup(() => clearInterval(interval))');
+  });
+
+  it('adds both onMount and onCleanup when both are used', () => {
+    const source = `
+<script lang="ts">
+onMount(() => {
+  console.log('mounted');
+});
+onCleanup(() => {
+  console.log('cleanup');
+});
+</script>
+<template>
+  <div>hello</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("import { createEffect, delegateEvents, onMount, onCleanup } from 'tanni-runtime';");
+    expect(code).toContain('onMount(() => {');
+    expect(code).toContain('onCleanup(() => {');
+  });
+
+  it('does not add lifecycle hooks when not used in script', () => {
+    const source = `
+<script lang="ts">
+const x = 1;
+</script>
+<template>
+  <div>{{ x }}</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain("import { createEffect, delegateEvents } from 'tanni-runtime';");
+    expect(code).not.toContain('onMount');
+    expect(code).not.toContain('onCleanup');
+  });
+
+  it('preserves onMount in the component body', () => {
+    const source = `
+<script lang="ts">
+const el = document.getElementById('app');
+onMount(() => {
+  el?.focus();
+});
+</script>
+<template>
+  <div>focused</div>
+</template>
+`;
+    const { code } = compileSfc(source, { runtimeModule: 'tanni-runtime' });
+    expect(code).toContain('onMount(() => {');
+    expect(code).toContain("el?.focus()");
+    expect(code).toContain('export default function Component(__props = {}) {');
+  });
+});

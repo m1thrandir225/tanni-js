@@ -104,15 +104,62 @@ function transformNode(node: TemplateNode): TransformNode {
     });
   }
 
+  const isComponent = /^[A-Z]/.test(node.tag);
+  const transformedChildren = node.children.map((child) => transformNode(child));
+
+  let slots: Map<string, TransformNode[]> | undefined;
+  let children: TransformNode[];
+
+  if (isComponent && transformedChildren.length > 0) {
+    slots = new Map<string, TransformNode[]>();
+    const defaultSlotChildren: TransformNode[] = [];
+
+    for (const child of transformedChildren) {
+      if (
+        child.type === 'Element' &&
+        child.tag === 'template' &&
+        child.attributes.some((a) => a.name === 'slot')
+      ) {
+        const slotAttr = child.attributes.find((a) => a.name === 'slot');
+        const slotName = slotAttr?.value || 'default';
+        const existing = slots.get(slotName) ?? [];
+        existing.push(...child.children);
+        slots.set(slotName, existing);
+      } else {
+        defaultSlotChildren.push(child);
+      }
+    }
+
+    const hasNonWhitespaceDefault = defaultSlotChildren.some((c) => {
+      if (c.type === 'Element') return true;
+      return c.segments.some((s) => s.type === 'dynamic' || (s.type === 'static' && s.value.trim().length > 0));
+    });
+
+    if (hasNonWhitespaceDefault) {
+      const existing = slots.get('default') ?? [];
+      existing.push(...defaultSlotChildren);
+      slots.set('default', existing);
+    }
+
+    if (slots.size === 0) {
+      slots = undefined;
+    }
+
+    children = [];
+  } else {
+    children = transformedChildren;
+  }
+
   return {
     type: 'Element',
     tag: node.tag,
-    isComponent: /^[A-Z]/.test(node.tag),
+    isComponent,
     attributes,
     bindings,
     events,
     directives,
-    children: node.children.map((child) => transformNode(child)),
+    children,
+    slots,
   };
 }
 

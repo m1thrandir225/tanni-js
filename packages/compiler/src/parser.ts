@@ -1,19 +1,52 @@
 import type { ElementNode, RawAttribute, SfcDescriptor, SfcStyleBlock, TemplateNode, TemplateRoot, TextNode } from './types';
 
-const TEMPLATE_BLOCK = /<template\b[^>]*>([\s\S]*?)<\/template>/i;
 const SCRIPT_BLOCK = /<script\b([^>]*)>([\s\S]*?)<\/script>/i;
 const STYLE_BLOCK = /<style\b([^>]*)>([\s\S]*?)<\/style>/gi;
 const LANG_ATTR = /\blang\s*=\s*["']([^"']+)["']/i;
 const SCOPED_ATTR = /\bscoped\b/i;
 const SETUP_ATTR = /\bsetup\b/i;
 
+function extractTemplateBlock(source: string): string | null {
+  const openMatch = source.match(/<template\b[^>]*>/i);
+  if (!openMatch || openMatch.index == null) return null;
+
+  const contentStart = openMatch.index + openMatch[0].length;
+  const TAG_OPEN = /<template\b[^>]*(?:\/>|>)/gi;
+  const TAG_CLOSE = /<\/template\s*>/gi;
+
+  let depth = 1;
+  let cursor = contentStart;
+
+  while (depth > 0 && cursor < source.length) {
+    TAG_OPEN.lastIndex = cursor;
+    TAG_CLOSE.lastIndex = cursor;
+
+    const nextOpen = TAG_OPEN.exec(source);
+    const nextClose = TAG_CLOSE.exec(source);
+
+    if (!nextClose) break;
+
+    if (nextOpen && nextOpen.index < nextClose.index && !nextOpen[0].endsWith('/>')) {
+      depth += 1;
+      cursor = TAG_OPEN.lastIndex;
+    } else {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(contentStart, nextClose.index);
+      }
+      cursor = TAG_CLOSE.lastIndex;
+    }
+  }
+
+  return null;
+}
+
 export function parseSfc(source: string): SfcDescriptor {
-  const templateMatch = source.match(TEMPLATE_BLOCK);
-  if (!templateMatch) {
+  const templateBlock = extractTemplateBlock(source);
+  if (templateBlock == null) {
     throw new Error('Missing <template> block in .tanni file.');
   }
-  const templateBlock = templateMatch[1];
-  if (!templateBlock) {
+  if (templateBlock.trim().length === 0) {
     throw new Error('Template block is empty.');
   }
 
