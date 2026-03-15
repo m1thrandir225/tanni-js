@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Hina+Mincho&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-heading: 'Hina Mincho', serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}

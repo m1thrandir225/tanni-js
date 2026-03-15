@@ -20,5 +20,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true
   },
-  "exclude": ["node_modules", "dist", "examples", "playground", "template"]
+  "exclude": ["node_modules", "dist", "examples", "playground", "template", "landing"]
 }

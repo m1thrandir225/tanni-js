@@ -1,0 +1,37 @@
+<script lang="ts">
+  import Hero from './components/Hero.tanni';
+  import Features from './components/Features.tanni';
+  import LiveDemo from './components/LiveDemo.tanni';
+  import CodeExample from './components/CodeExample.tanni';
+</script>
+
+<template>
+  <div class="min-h-screen bg-white font-body text-gray-900 antialiased">
+    <Hero />
+    <Features />
+    <LiveDemo />
+
+    <footer class="border-t border-gray-100 px-6 py-10">
+      <div class="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
+        <div class="flex items-center gap-3">
+          <img src="/tannijs-icon-dark.png" alt="tanni.js" class="h-6 w-6" />
+          <span class="text-sm text-gray-500">Tanni (単に) — simply modern UI.</span>
+        </div>
+        <div class="flex items-center gap-6">
+          <a
+            href="https://github.com/m1thrandir225/tanni-js"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-gray-400 transition-colors hover:text-gray-600"
+          >GitHub</a>
+          <a
+            href="https://www.npmjs.com/package/tannijs"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-gray-400 transition-colors hover:text-gray-600"
+          >npm</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</template>
