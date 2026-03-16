@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createSignal } from 'tannijs';
+  import { sourceCode, compiledCode } from './code-strings';
 
   const [count, setCount] = createSignal(0);
-  const [showCode, setShowCode] = createSignal(false);
+  const [showCompiled, setShowCompiled] = createSignal(false);
 
   function increment() {
     setCount((c) => c + 1);
@@ -16,147 +17,84 @@
     setCount(0);
   }
 
-  function toggleView() {
-    setShowCode((v) => !v);
+  function viewResult() {
+    setShowCompiled(false);
   }
+
+  function viewCompiled() {
+    setShowCompiled(true);
+  }
+
+  onMount(() => {
+    const srcEl = document.getElementById('source-code');
+    const cmpEl = document.getElementById('compiled-code');
+    if (srcEl) srcEl.textContent = sourceCode;
+    if (cmpEl) cmpEl.textContent = compiledCode;
+  });
 </script>
 
 <template>
   <section class="bg-gray-50 px-6 py-20 sm:py-28">
     <div class="mx-auto max-w-5xl">
       <h2 class="font-heading text-center text-3xl tracking-tight text-gray-900 sm:text-4xl">
-        Try It Live
+        See It in Action
       </h2>
       <p class="mx-auto mt-4 max-w-2xl text-center text-base leading-relaxed text-gray-500">
-        This counter is a real Tanni component running on this page. Toggle to see the source and compiled output.
+        A real Tanni counter component running on this page — interact with it, then peek at the compiled output.
       </p>
 
-      <div class="mx-auto mt-10 flex justify-center">
-        <button
-          class="relative inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-1 py-1 shadow-sm"
-          @click="toggleView"
-        >
-          <span
-            class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
-            :class="!showCode() ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-700'"
-          >Live Demo</span>
-          <span
-            class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
-            :class="showCode() ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-700'"
-          >View Code</span>
-        </button>
-      </div>
+      <div class="mt-14 grid gap-0 overflow-hidden rounded-xl border border-gray-200 shadow-lg lg:grid-cols-2">
 
-      <div tn-if="!showCode()" class="mx-auto mt-10 max-w-md">
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-2.5">
-            <span class="h-3 w-3 rounded-full bg-red-400"></span>
-            <span class="h-3 w-3 rounded-full bg-yellow-400"></span>
-            <span class="h-3 w-3 rounded-full bg-green-400"></span>
-            <span class="ml-2 text-xs font-medium text-gray-500">Counter.tanni — running</span>
+        <div class="border-b border-gray-200 lg:border-b-0 lg:border-r lg:border-gray-700/50">
+          <div class="flex items-center gap-2 border-b border-gray-700/50 px-4 py-2.5">
+            <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
+            <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
+            <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
+            <span class="ml-2 text-xs font-medium text-gray-400">Counter.tanni</span>
           </div>
-          <div class="p-8 text-center">
-            <p class="text-6xl font-semibold tabular-nums text-gray-900">{{ count() }}</p>
-            <div class="mt-6 flex justify-center gap-3">
+          <pre class="overflow-x-auto p-5"><code id="source-code"></code></pre>
+        </div>
+
+        <div class="flex flex-col bg-white">
+          <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+            <div class="flex gap-1">
               <button
-                class="cursor-pointer rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors rounded-md"
+                :class="!showCompiled() ? 'bg-white text-gray-900 ring-1 ring-gray-200 rounded-md px-4' : 'text-gray-500 hover:text-gray-700 px-4'"
+                @click="viewResult"
+              >Result</button>
+              <button
+                class="cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+                :class="showCompiled() ? 'bg-white text-gray-900 ring-1 ring-gray-200 rounded-md px-4' : 'text-gray-500 hover:text-gray-700 px-4'"
+                @click="viewCompiled"
+              >Compiled</button>
+            </div>
+          </div>
+
+          <div tn-show="!showCompiled()" class="flex flex-1 flex-col items-center justify-center p-10">
+            <p class="text-7xl font-semibold tabular-nums text-gray-900">{{ count() }}</p>
+            <div class="mt-8 flex gap-3">
+              <button
+                class="cursor-pointer rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 active:bg-indigo-800"
                 @click="increment"
               >+ 1</button>
               <button
-                class="cursor-pointer rounded-lg bg-gray-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gray-700"
+                class="cursor-pointer rounded-lg bg-gray-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gray-800 active:bg-gray-900"
                 @click="decrement"
-              >− 1</button>
+              >- 1</button>
               <button
-                class="cursor-pointer rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-rose-700"
+                class="cursor-pointer rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-rose-700 active:bg-rose-800"
                 @click="reset"
               >Reset</button>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div tn-if="showCode()" class="mt-10 grid gap-6 lg:grid-cols-2">
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-2.5">
-            <span class="h-3 w-3 rounded-full bg-red-400"></span>
-            <span class="h-3 w-3 rounded-full bg-yellow-400"></span>
-            <span class="h-3 w-3 rounded-full bg-green-400"></span>
-            <span class="ml-2 text-xs font-medium text-gray-500">Counter.tanni</span>
+          <div tn-show="showCompiled()" class="flex-1 overflow-auto ">
+            <pre class="p-5 text-[13px] leading-relaxed"><code id="compiled-code"></code></pre>
           </div>
-          <pre class="overflow-x-auto p-4 text-[13px] leading-relaxed"><code class="text-gray-800"><span class="text-gray-400">&lt;script lang="ts"&gt;</span>
-  <span class="text-blue-600">import</span> { createSignal } <span class="text-blue-600">from</span> <span class="text-emerald-600">'tannijs'</span>;
-
-  <span class="text-blue-600">const</span> [count, setCount] = <span class="text-amber-600">createSignal</span>(<span class="text-violet-600">0</span>);
-
-  <span class="text-blue-600">function</span> <span class="text-amber-600">increment</span>() {
-    <span class="text-amber-600">setCount</span>(<span class="text-gray-500">(c) =&gt;</span> c + <span class="text-violet-600">1</span>);
-  }
-
-  <span class="text-blue-600">function</span> <span class="text-amber-600">decrement</span>() {
-    <span class="text-amber-600">setCount</span>(<span class="text-gray-500">(c) =&gt;</span> c - <span class="text-violet-600">1</span>);
-  }
-
-  <span class="text-blue-600">function</span> <span class="text-amber-600">reset</span>() {
-    <span class="text-amber-600">setCount</span>(<span class="text-violet-600">0</span>);
-  }
-<span class="text-gray-400">&lt;/script&gt;</span>
-
-<span class="text-gray-400">&lt;template&gt;</span>
-  <span class="text-rose-600">&lt;p&gt;</span>{{ <span class="text-amber-600">count</span>() }}<span class="text-rose-600">&lt;/p&gt;</span>
-  <span class="text-rose-600">&lt;button</span> <span class="text-violet-600">@click</span>=<span class="text-emerald-600">"increment"</span><span class="text-rose-600">&gt;</span>+ 1<span class="text-rose-600">&lt;/button&gt;</span>
-  <span class="text-rose-600">&lt;button</span> <span class="text-violet-600">@click</span>=<span class="text-emerald-600">"decrement"</span><span class="text-rose-600">&gt;</span>− 1<span class="text-rose-600">&lt;/button&gt;</span>
-  <span class="text-rose-600">&lt;button</span> <span class="text-violet-600">@click</span>=<span class="text-emerald-600">"reset"</span><span class="text-rose-600">&gt;</span>Reset<span class="text-rose-600">&lt;/button&gt;</span>
-<span class="text-gray-400">&lt;/template&gt;</span></code></pre>
         </div>
 
-        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-2.5">
-            <span class="h-3 w-3 rounded-full bg-red-400"></span>
-            <span class="h-3 w-3 rounded-full bg-yellow-400"></span>
-            <span class="h-3 w-3 rounded-full bg-green-400"></span>
-            <span class="ml-2 text-xs font-medium text-gray-500">Compiled Output</span>
-          </div>
-          <pre class="overflow-x-auto p-4 text-[13px] leading-relaxed"><code class="text-gray-800"><span class="text-blue-600">import</span> { createSignal, <span class="text-amber-600">effect</span> }
-  <span class="text-blue-600">from</span> <span class="text-emerald-600">'tannijs'</span>;
-
-<span class="text-blue-600">export default function</span> <span class="text-amber-600">Counter</span>() {
-  <span class="text-blue-600">const</span> [count, setCount] = <span class="text-amber-600">createSignal</span>(<span class="text-violet-600">0</span>);
-
-  <span class="text-blue-600">function</span> <span class="text-amber-600">increment</span>() {
-    <span class="text-amber-600">setCount</span>(<span class="text-gray-500">(c) =&gt;</span> c + <span class="text-violet-600">1</span>);
-  }
-  <span class="text-blue-600">function</span> <span class="text-amber-600">decrement</span>() {
-    <span class="text-amber-600">setCount</span>(<span class="text-gray-500">(c) =&gt;</span> c - <span class="text-violet-600">1</span>);
-  }
-  <span class="text-blue-600">function</span> <span class="text-amber-600">reset</span>() {
-    <span class="text-amber-600">setCount</span>(<span class="text-violet-600">0</span>);
-  }
-
-  <span class="text-blue-600">const</span> p = document.<span class="text-amber-600">createElement</span>(<span class="text-emerald-600">"p"</span>);
-  <span class="text-amber-600">effect</span>(<span class="text-gray-500">() =&gt;</span> {
-    p.textContent = <span class="text-amber-600">count</span>();
-  });
-
-  <span class="text-blue-600">const</span> btn1 = document.<span class="text-amber-600">createElement</span>(<span class="text-emerald-600">"button"</span>);
-  btn1.textContent = <span class="text-emerald-600">"+ 1"</span>;
-  btn1.<span class="text-amber-600">addEventListener</span>(<span class="text-emerald-600">"click"</span>, increment);
-
-  <span class="text-blue-600">const</span> btn2 = document.<span class="text-amber-600">createElement</span>(<span class="text-emerald-600">"button"</span>);
-  btn2.textContent = <span class="text-emerald-600">"− 1"</span>;
-  btn2.<span class="text-amber-600">addEventListener</span>(<span class="text-emerald-600">"click"</span>, decrement);
-
-  <span class="text-blue-600">const</span> btn3 = document.<span class="text-amber-600">createElement</span>(<span class="text-emerald-600">"button"</span>);
-  btn3.textContent = <span class="text-emerald-600">"Reset"</span>;
-  btn3.<span class="text-amber-600">addEventListener</span>(<span class="text-emerald-600">"click"</span>, reset);
-
-  <span class="text-blue-600">const</span> _frag = document
-    .<span class="text-amber-600">createDocumentFragment</span>();
-  _frag.<span class="text-amber-600">append</span>(p, btn1, btn2, btn3);
-  <span class="text-blue-600">return</span> _frag;
-}</code></pre>
-        </div>
       </div>
-
     </div>
   </section>
 </template>
