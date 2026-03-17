@@ -12,48 +12,48 @@
       </p>
 
       <div class="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md">
-          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-sm">
+          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
             <img src="/arrows-split-up-and-left-solid-full.svg" alt="Signal" class="h-5 w-5 fill:current" />
           </div>
           <h3 class="text-base font-semibold text-gray-900">Signal-Based Reactivity</h3>
           <p class="mt-2 text-sm leading-relaxed text-gray-500">Fine-grained signals update only the DOM nodes that changed — no diffing, no virtual DOM overhead.</p>
         </div>
 
-        <div class="rounded-xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md">
-          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-sm">
+          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
             <img src="/file-regular-full.svg" alt="Code" class="h-5 w-5 fill:current" />
           </div>
           <h3 class="text-base font-semibold text-gray-900">Single-File Components</h3>
           <p class="mt-2 text-sm leading-relaxed text-gray-500">Familiar Vue-like SFC syntax with script, template, and style blocks in one .tanni file.</p>
         </div>
 
-        <div class="rounded-xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md">
-          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-sm">
+          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
             <img src="/hourglass-solid-full.svg" alt="Hourglass" class="h-5 w-5 fill:current" />
           </div>
           <h3 class="text-base font-semibold text-gray-900">Compile-Time Optimization</h3>
           <p class="mt-2 text-sm leading-relaxed text-gray-500">The compiler transforms templates into optimized DOM instructions at build time — minimal runtime cost.</p>
         </div>
 
-        <div class="rounded-xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md">
-          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-sm">
+          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
             <img src="/typescript.svg" alt="Code" class="h-5 w-5 fill:current" />
           </div>
           <h3 class="text-base font-semibold text-gray-900">TypeScript-First</h3>
           <p class="mt-2 text-sm leading-relaxed text-gray-500">Full TypeScript support with typed props, signals, and memos — no extra configuration needed.</p>
         </div>
 
-        <div class="rounded-xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md">
-          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-sm">
+          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
             <img src="/download-solid-full.svg" alt="Download" class="h-5 w-5 fill:current" />
           </div>
           <h3 class="text-base font-semibold text-gray-900">Tiny Bundle Size</h3>
           <p class="mt-2 text-sm leading-relaxed text-gray-500">A lightweight runtime that ships only what you use. No framework bloat, just the essentials.</p>
         </div>
 
-        <div class="rounded-xl border border-gray-100 bg-white p-6 transition-shadow hover:shadow-md">
-          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-sm">
+          <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
             <img src="/code-branch-solid-full.svg" alt="Code" class="h-5 w-5 fill:current" />
           </div>
           <h3 class="text-base font-semibold text-gray-900">Familiar Directives</h3>

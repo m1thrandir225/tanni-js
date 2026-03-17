@@ -1,3 +1,4 @@
+//TODO: fix this so the compiler doesn't strip the template tags
 export const sourceCode = [
   '<script lang="ts">',
   "  import { createSignal } from 'tannijs';",
