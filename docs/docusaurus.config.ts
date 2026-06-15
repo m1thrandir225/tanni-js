@@ -2,8 +2,6 @@ import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
-
 const config: Config = {
   title: 'Tanni',
   tagline: 'A TypeScript-first frontend framework with Vue-like syntax and signal-based reactivity',
@@ -20,7 +18,6 @@ const config: Config = {
   // Set the /<baseUrl>/ pathname under which your site is served.
   baseUrl: '/',
 
-  // GitHub repo metadata (used for "Edit this page" links).
   organizationName: 'm1thrandir225',
   projectName: 'tanni-js',
 
@@ -37,6 +34,47 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
+
+  stylesheets: [
+    'https://fonts.googleapis.com/css2?family=Hina+Mincho&family=Inter:wght@400;500;600;700&display=swap',
+  ],
+
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: { rel: 'apple-touch-icon', sizes: '180x180', href: '/img/apple-touch-icon.png' },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/img/favicon-32x32.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/img/favicon-16x16.png',
+      },
+    },
+  ],
 
   presets: [
     [
@@ -63,10 +101,11 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'Tanni',
+      title: 'Tanni.js',
       logo: {
-        alt: 'Tanni Logo',
-        src: 'img/logo.svg',
+        alt: 'Tanni',
+        src: 'img/tannijs-icon-dark.png',
+        srcDark: 'img/tannijs-icon-light.png',
       },
       items: [
         {
