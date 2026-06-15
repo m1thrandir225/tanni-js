@@ -6,7 +6,17 @@ import { defineConfig } from 'eslint/config';
 
 export default defineConfig(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', 'examples/**', 'playground/**', 'template/**', 'landing/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/coverage/**',
+      'examples/**',
+      'playground/**',
+      'template/**',
+      'landing/**',
+      '**/build/**',
+      'docs/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,

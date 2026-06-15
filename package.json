@@ -21,7 +21,10 @@
     "type-check": "tsc --noEmit --pretty false",
     "build": "pnpm -r run build",
     "dev": "pnpm --filter tannijs run dev",
-    "playground": "pnpm --filter playground run dev"
+    "playground": "pnpm --filter playground run dev",
+    "docs:dev": "pnpm --filter tanni-docs run start",
+    "docs:build": "pnpm --filter tanni-docs run build",
+    "docs:serve": "pnpm --filter tanni-docs run serve"
   },
   "repository": {
     "type": "git",
