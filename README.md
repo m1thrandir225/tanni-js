@@ -42,6 +42,33 @@ npm/yarn/pnpm install
 npm/yarn/pnpm run dev
 ```
 
+## Documentation
+
+The documentation site lives in [`/docs`](./docs) and is built with
+[Docusaurus](https://docusaurus.io/). It's part of the pnpm workspace, so a single
+install from the repo root covers it.
+
+Run the docs locally:
+
+```bash
+pnpm install
+pnpm docs:dev
+```
+
+This starts the site at [http://localhost:3000](http://localhost:3000).
+
+Build the static site (also the link-checking gate — the build fails on broken
+internal links) and preview the production output:
+
+```bash
+pnpm docs:build
+pnpm docs:serve
+```
+
+Content lives in `docs/docs/**` as Markdown; the navigation is defined in
+`docs/sidebars.ts`. To add a page, create a Markdown file under `docs/docs/` and add
+its id to the sidebar.
+
 ## Roadmap
 
 ### Version: 0.1
