@@ -23,8 +23,16 @@
             href="https://github.com/m1thrandir225/tanni-js"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-sm text-gray-400 transition-colors hover:text-gray-600"
-          >GitHub</a>
+            class="text-sm text-gray-400 transition-colors hover:text-gray-600">
+          GitHub
+          </a>
+          <a
+            href="https://docs.tannijs.sebastijanzindl.me/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-gray-400 transition-colors hover:text-gray-600">
+          Documentation
+          </a>
           <a
             href="https://www.npmjs.com/package/tannijs"
             target="_blank"
