@@ -44,7 +44,9 @@ npm/yarn/pnpm run dev
 
 ## Documentation
 
-The documentation site lives in [`/docs`](./docs) and is built with
+[Check out the docs](https://docs.tannijs.sebastijanzindl.me/)
+
+The docs site lives in [`/docs`](./docs) and is built with
 [Docusaurus](https://docusaurus.io/). It's part of the pnpm workspace, so a single
 install from the repo root covers it.
 
